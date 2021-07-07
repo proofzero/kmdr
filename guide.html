@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>guide.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="kubelt-guide">kubelt guide</h1>
+<p>kubelt is a platform for containerizing data. With kubelt, users get the experience of Heroku with the scale of Kubernetes. Furthermore, kubelt provides a plugin architecture making it extensible into novel application models.</p>
+<p>The goal of kubelt is to eliminate context switching by becoming the go-to platform and tool set for data scientists, data engineers and other data-centric roles. Context switching interrupts &quot;flow&quot; which leads to low productivity and high stress. With the data ecosystem growing in complexity and requiring ever more specialized tooling, context switching in working environments is becoming a larger problem.</p>
+<p>Kubelt aims to improve the lifecycle of data-centric work with fast and compounding data sourcing and deployment models that keep users in flow.</p>
+<h2 id="how-it-works">How it works</h2>
+<p>kubelt is web3.0-first and is built on IPFS data substrates (public, managed, and on-prem) that distribute static and linked tree datasets as content-addressable data containers called &quot;comets&quot;. Just like traditional containers, comet data containers are versioned and can be materialized for users and programs in a variety of ways.</p>
+<p>Comet containers can also host arbitrary functions which can be composed alongside datasets as &quot;comet flows&quot; similar to ETL/ELT pipelines or APIs. When combined with schemas and types, comet containers and comet flows can be materialized and run anywhere with strong governance and validation, enabling novel applications.</p>
+<h2 id="usage">Usage</h2>
+<p>Today, kubelt can be used via CLI. The CLI, called <code>kmdr</code>, works with a configurable daemon called <code>ktrl</code> to provide a &quot;git-like&quot; experience for end users.</p>
+<p><code>kmdr</code> and <code>ktrl</code> also provide a nice stable surface for &quot;no/low-code&quot; interfaces. <code>kmdr</code> and <code>ktrl</code> are both are open source.</p>
+<h3 id="kmdr-cli">KMDR CLI</h3>
+<p>The <code>kmdr</code> cli provides a set of commands for working with data containers. For example, here is a command to materialize a dataset to a user's local file system filtered by a predicate. (Note: predicates work against the kubelt schema and type system)</p>
+<pre class="hljs"><code><div>kmdr fetch acmecorp://comet:looney_tunes/dataset:road_runner_circuit_times[<span class="hljs-string">'time &lt; 1000'</span>, <span class="hljs-string">'&amp;&amp;'</span>, <span class="hljs-string">'road == "hwy"'</span>]]@latest | kmdr csv -o road_runner_times.csv -
+</div></code></pre>
+<p><strong>NOTE</strong> TBD: Materilzation mangement via package manager</p>
+<p>From here the user can work with the data as a <code>csv</code> file, making changes and cleaning things up, then pushing it back at which time it will be assigned a new version.</p>
+<pre class="hljs"><code><div>kmdr csv -i road_runner_times.csv | kmdr push acmecorp://comet:looney_tunes/dataset:road_runner_circuit_times -
+</div></code></pre>
+<p>The user can also decide to run a program that yields a new dataset, and then push that new dataset to the data container.</p>
+<pre class="hljs"><code><div>python time_analysis.py <span class="hljs-comment"># outputs new csv</span>
+kmdr csv -i road_runner_circuit_mean_times.csv | kmdr push acmecorp://comet:looney_tines/dataset:road_runner_circuit_mean_times
+</div></code></pre>
+<p>Best of all, the above steps can be <strong>piped</strong> into a single command with a new arbitrary transform function (more on that later). Contract/schema validations are also enforced between pipes.</p>
+<pre class="hljs"><code><div>kmdr build -e python mean_func team_analysis.py | kmdr push acmecorp://comet:looney_tunes/transform:mean_func
+
+
+kmdr fetch acmecorp://comet:looney_tunes/road_runner_circuit_times[<span class="hljs-string">'time &lt; 1000'</span>, <span class="hljs-string">'&amp;&amp;'</span>, <span class="hljs-string">'road == "hwy"'</span>]]@latest | \
+kmdr run acmecorp://comet:looney_tunes/mean_func@0.1.0 | \
+kmdr push acmecorp://comet:looney_tunes/road_runner_circuit_mean_times
+</div></code></pre>
+<p>To recap, let's break down the different components of the commands and arguments. In the above example, a space called <code>acmecorp</code> has been deployed along with a comet container called <code>looney_tunes</code> that contains a dataset called <code>road_runner_circuit_times</code> and a function that yields the mean of the road runner circuit times to a new dataset called <code>road_runner_circuit_mean_times</code>. And all of this is made available through crystal clear content addresses that follow this format:</p>
+<pre class="hljs"><code><div>kmdr fetch space://comet:container_name/dataset:dataset_name[:predicate]@version | \
+kmdr run space://comet:container_name/transform:transform@version | \
+kmdr push space://comet:container_name/dataset:dataset_name
+</div></code></pre>
+<p>This sequence of commands can also be described declaratively as a &quot;comet flow&quot; by using what is called a &quot;kubelt manifest&quot; and executed together with the following command:</p>
+<pre class="hljs"><code><div>kmdr run acmecorp://comet:looney_tunes/calculate_road_runner_circuit_mean | kmdr csv -o road_runner_circuit_mean_times.csv
+</div></code></pre>
+<p><strong>NOTE</strong>: The commands listed above would also provide helpful validations and authorizations for the resources in question.</p>
+<h2 id="ktrl">KTRL</h2>
+<p><code>ktrl</code> is a local daemon that responds to <code>kmdr</code> commands for managing datasets, configurations, authentication, and local runtimes (wasm). The <code>ktrl</code> daemon is a subset of the remote kubelt cluster software that ensures local parity with all other members on the platform.</p>
+<h2 id="addresses">Addresses</h2>
+<p>Content on the kublet platform is stored as a hypergraph which allows kubelt content to be accessed directly via a node address or search path. For example,</p>
+<p>A node address contains the <code>name</code> and optionally the <code>type</code>, <code>version</code> and <code>disambiguator</code> of the content in this format <code>disambiguator:type:name@version</code></p>
+<pre class="hljs"><code><div>kmdr fetch road_runner_circuit_times <span class="hljs-comment"># node address</span>
+kmdr fetch dataset:road_runner_circuit_times <span class="hljs-comment"># node address if collision with type</span>
+kmdr fetch wileECoyote:dataset:road_runner_circuit_times <span class="hljs-comment"># node address if collision with name</span>
+kmdr fetch wileECoyote:dataset:road_runner_circuit_times@0.1.0 <span class="hljs-comment"># node address if version required</span>
+</div></code></pre>
+<p>However, users may enjoy organizing content into hierarchies and accessing them through an entry point and search path analgous to the first example.</p>
+<p><strong>Note</strong> Disambiguators are aliases to the indvidual or group of keys used for auth.</p>
+<h2 id="configuration">Configuration</h2>
+<p>Behind the scenes end users or operators would have defined data containers through declarative &quot;kubernetes-like&quot; manifests or &quot;configuration as code&quot;. These manifests are a set of APIs for <code>ktrl</code> and backend services to parse as objects and resources across the kubelt universe.</p>
+<p><strong>NOTE</strong>: Resources can be created directly through helper <code>kmdr</code> cli commands and saved as yaml via stdout for maintenance.</p>
+<p>Here is the example above defined as kubelt manifests (sans governance/acl configurations):</p>
+<pre class="hljs"><code><div><span class="hljs-meta">---</span>
+<span class="hljs-attr">apiVersion:</span> <span class="hljs-string">kubelt.com/v1alpha1</span>
+<span class="hljs-attr">kind:</span> <span class="hljs-string">Space</span>
+<span class="hljs-attr">metadata:</span>
+  <span class="hljs-attr">name:</span> <span class="hljs-string">acmecorp</span>
+<span class="hljs-attr">spec:</span>
+  <span class="hljs-attr">keys:</span> <span class="hljs-string">[]</span>
+<span class="hljs-meta">---</span>
+<span class="hljs-attr">apiVersion:</span> <span class="hljs-string">kubelt.com/v1alpha1</span>
+<span class="hljs-attr">kind:</span> <span class="hljs-string">Comet</span>
+<span class="hljs-attr">metadata:</span>
+  <span class="hljs-attr">name:</span> <span class="hljs-string">looney_tunes</span>
+  <span class="hljs-attr">space:</span> <span class="hljs-string">acmecorp</span>
+<span class="hljs-meta">---</span>
+<span class="hljs-attr">apiVersion:</span> <span class="hljs-string">kubelt.com/v1alpha1</span>
+<span class="hljs-attr">kind:</span> <span class="hljs-string">Dataset</span>
+<span class="hljs-attr">metadata:</span>
+  <span class="hljs-attr">name:</span> <span class="hljs-string">road_runner_times</span>
+  <span class="hljs-attr">comet:</span> <span class="hljs-string">looney_tunes</span> 
+<span class="hljs-attr">spec:</span>
+  <span class="hljs-attr">schema:</span> <span class="hljs-string">road_runner_schema/lap_times</span>
+<span class="hljs-meta">---</span>
+<span class="hljs-attr">apiVersion:</span> <span class="hljs-string">kubelt.com/v1alpha1</span>
+<span class="hljs-attr">kind:</span> <span class="hljs-string">Dataset</span>
+<span class="hljs-attr">metadata:</span>
+  <span class="hljs-attr">name:</span> <span class="hljs-string">road_runner_mean_times</span>
+  <span class="hljs-attr">comet:</span> <span class="hljs-string">looney_tunes</span> 
+<span class="hljs-attr">spec:</span>
+  <span class="hljs-attr">schema:</span> <span class="hljs-string">road_runner_schema/mean_times</span>
+<span class="hljs-meta">---</span>
+<span class="hljs-attr">apiVersion:</span> <span class="hljs-string">kubelt.com/v1alpha1</span>
+<span class="hljs-attr">kind:</span> <span class="hljs-string">Transform</span>
+<span class="hljs-attr">metadata:</span>
+  <span class="hljs-attr">name:</span> <span class="hljs-string">mean_func</span>
+  <span class="hljs-attr">comet:</span> <span class="hljs-string">looney_tunes</span> 
+<span class="hljs-attr">spec:</span>
+  <span class="hljs-attr">schema:</span> 
+    <span class="hljs-attr">in:</span> <span class="hljs-string">road_runner_schema/lap_times</span>
+    <span class="hljs-attr">out:</span> <span class="hljs-string">road_runner_schema/mean_times</span>
+<span class="hljs-meta">---</span>
+<span class="hljs-attr">apiVersion:</span> <span class="hljs-string">kubelt.com/v1alpha1</span>
+<span class="hljs-attr">kind:</span> <span class="hljs-string">Schema</span>
+<span class="hljs-attr">metadata:</span>
+  <span class="hljs-attr">name:</span> <span class="hljs-string">road_runner_schema</span>
+  <span class="hljs-attr">space:</span> <span class="hljs-string">acmecorp</span>
+<span class="hljs-attr">spec:</span>
+  <span class="hljs-attr">definitions:</span> 
+    <span class="hljs-attr">lap_times:</span> <span class="hljs-string">|
+      circuit: string &amp; ~= [a-zA-Z0-9_-]){3,20} // string that is alphanumeric between 3 and 20 characters in len
+      lap: number &amp; &gt;0 &amp; &lt;100 // a lab number greater than 0 and less that 100
+      time: number &amp; &gt;0 &amp; &lt;100000 // a number greater than 0 and less that 100000ms
+</span>    <span class="hljs-attr">mean_times:</span> <span class="hljs-string">|
+      circuit: lap_times/circuit
+      mean: lap_times/time
+</span>    <span class="hljs-attr">mean_func_in:</span> <span class="hljs-string">|
+      lap_times: [ lap_times ]
+</span>    <span class="hljs-attr">mean_func_out:</span> <span class="hljs-string">|
+      mean_times: [ mean_times ]
+</span><span class="hljs-meta">---</span>
+<span class="hljs-attr">apiVersion:</span> <span class="hljs-string">kubelt.com/v1alpha1</span>
+<span class="hljs-attr">kind:</span> <span class="hljs-string">CometFlow</span>
+<span class="hljs-attr">metadata:</span>
+  <span class="hljs-attr">name:</span> <span class="hljs-string">calculate_road_runner_circuit_mean</span>
+  <span class="hljs-attr">space:</span> <span class="hljs-string">acmecorp</span>
+<span class="hljs-attr">spec:</span>
+  <span class="hljs-attr">jobs:</span>
+    <span class="hljs-attr">fetch_times:</span>
+      <span class="hljs-attr">steps:</span>
+      <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">fetch_circuit_times</span>
+        <span class="hljs-attr">uses:</span> <span class="hljs-string">kmdr/fetch</span>
+        <span class="hljs-attr">with:</span>
+          <span class="hljs-attr">source:</span> <span class="hljs-string">looney_tunes/road_runner_times</span>
+          <span class="hljs-attr">version:</span> <span class="hljs-string">latest</span>
+          <span class="hljs-attr">predicate:</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-string">'time &lt; 1000'</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-string">'&amp;&amp;'</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-string">'road == "hwy"'</span>
+          <span class="hljs-comment"># or with content address; uses: kmdr fetch acmecorp://comet:looney_tunes/road_runner_times['time &lt; 1000', '&amp;&amp;', 'road == "hwy"']@latest</span>
+    
+    <span class="hljs-attr">calc_mean:</span>
+      <span class="hljs-attr">steps:</span>
+      <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">calculate_circuit_mean</span>
+        <span class="hljs-attr">needs:</span> <span class="hljs-string">fetch_times</span>
+        <span class="hljs-attr">uses:</span> <span class="hljs-string">kmdr/run</span>
+        <span class="hljs-attr">with:</span>
+          <span class="hljs-attr">func:</span> <span class="hljs-string">looney_tunes/calculate_road_runner_circuit_mean</span>
+          <span class="hljs-attr">in:</span> <span class="hljs-string">fetch_times.outputs.fetch_circuit_times</span>
+
+    <span class="hljs-attr">push_mean:</span>
+      <span class="hljs-attr">steps:</span>
+      <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">push_circuit_mean_times</span>
+        <span class="hljs-attr">needs:</span> <span class="hljs-string">calc_mean</span>
+        <span class="hljs-attr">uses:</span> <span class="hljs-string">kmdr/push</span>
+        <span class="hljs-attr">with:</span>
+          <span class="hljs-attr">in:</span> <span class="hljs-string">calc_mean.outputs.calculate_circuit_mean</span>
+          <span class="hljs-attr">sink:</span> <span class="hljs-string">looney_tunes/road_runner_mean_times</span>
+</div></code></pre>
+<h2 id="schemas-and-types">Schemas and Types</h2>
+<p>Schemas and types unlock validation and data generation. Declaring types allows kubelt to transform flat, static files into trees of linked data that not only optimize storage but enable robust querying of datasets and pre/post validation of mutation events.</p>
+<p>Schemas are standalone objects with their own content addresses that in the future can be accessed to generate test data and look alike data for DLP and fast data sourcing.</p>
+<p>For example,</p>
+<pre class="hljs"><code><div>kmdr synth schema:road_runner_schema | kmdr csv -o road_runner_times.csv
+</div></code></pre>
+<h2 id="governance">Governance</h2>
+<p>Spaces and containers offer different levels of governance and access controls to kubelt objects and resources. Spaces are analogous to repositories and can be shared with multiple users and groups of users within and across organizational contexts. Comets are a subset of spaces that can be forked and subscribed to from one space to another (see advanced comet flows below for more).</p>
+<h2 id="forking-and-subscribing">Forking and Subscribing</h2>
+<p>Just like with git, kubelt offers users the ability to fork and subscribe to containers and other objects that users have privileged access to.</p>
+<p>For instance, a user in the space <code>acmecorp</code> may choose to subscribe to the <code>road_runner_circuit</code> in their personal space named <code>wileEcoyote</code> in order to use it in his own analysis.</p>
+<p>In addition to subscribing, <code>wileEcoyote</code> would fork the <code>road_runner_schema</code> to add new columns and types for a new dataset.</p>
+<p>Subscribing and forking can be restricted to specific users or classes of users on the platform across contexts.</p>
+<h2 id="advanced-comet-flows">Advanced Comet Flows</h2>
+<p>One of the most powerful features of kubelt is users are able to bring the code to the data rather than moving the data to the code. This opens up possibilities for distributed machine learning and other classes of data science and data engineering typically restricted due to private and public defined compliance policies such as HIPPA, PCI, and others.</p>
+<h2 id="contexts">Contexts</h2>
+<p>Contexts are bound to specific deployments/clusters of kubelt, for instance public, managed/cloud, and on-prem. Users can have access to multiple contexts for cross-organizational collaboration (think hospitals, research institutions/universities, and enterprises).</p>
+<p>Goverance can be enforced at the organizational level with private contexts.</p>
+<h2 id="plugin-architecture">Plugin Architecture</h2>
+<p>Similar to Kubernetes CRDs and <code>kubectl</code> cli, kubelt will provide the ability to publish and extend kubelt APIs and cli extensions with custom plugins to the open source <code>kmdr</code> and <code>ktrl</code> projects.</p>
+<p>This plugin architecture is the same the core kubelt team uses to create commands like the <code>csv</code> command shown above.</p>
+<h2 id="application-models">Application Models</h2>
+<p>kubelt isn't just about data sourcing and data pipelines. Over time, kubelt can be levered into end-to-end application development. Some of our favourite application models that kubelt enables are below.</p>
+<h3 id="cqrses-and-reactive-applications">CQRS/ES and Reactive Applications</h3>
+<p>The Command Query Responsibility Segregation (CQRS) / Event Sourcing (ES) application model is a robust architecture for building resilient, scalable applications. The architecture pattern splits back ends into less frequent mutation services with reactive event streams and high frequency read services with highly cacheable APIs.</p>
+<p>With CQRS/ES, every mutation is captured as an immutable event that can be replayed for triage, machine learning, and more in addition to forking new, fast readable databases for standalone APIs.</p>
+<p>This is the default model for the kubelt platform however, at the moment we are focused on the write side first.</p>
+<h3 id="embedded-applications">Embedded Applications</h3>
+<p>Since kubelt is built with IPFS, customers of kubelt can build distributed headless applications right into the OS of choice. For instance, we imagine a baked-in dropbox-like OS integration that materializes schema-driven files to file systems and distributes events, transforms and changes to all subscribers.</p>
+<h3 id="bootstrapping">Bootstrapping</h3>
+<p>Spaces and comets can be watched and used to ship configurations, scripts and other objects to bootstrap environments like:</p>
+<ul>
+<li>Severs</li>
+<li>Developer machines</li>
+<li>Edge compute</li>
+<li>Side cars</li>
+<li>...and more</li>
+</ul>
+<h2 id="sdk">SDK</h2>
+<p>In addition to the <code>kmdr</code> cli, kubelt can use its protobuf definitions to quickly create polyglot SDKs for code-level interfacing to data containers with wrappers for popular libraries like pandas and numpy.</p>
+<h1 id="enterprise-roadmap">Enterprise Roadmap</h1>
+<ul>
+<li>Private cluster contexts / on-prem</li>
+<li>Data lineage</li>
+<li>No/Low Code</li>
+<li>Operations dashboards</li>
+<li>Private subnets / network partitions</li>
+<li>Data bookkeeping and data wipes (similar to device registrations)</li>
+</ul>
+<h1 id="community-roadmap">Community Roadmap</h1>
+<ul>
+<li>Append-only datasets</li>
+<li>Aliases for content addresses</li>
+<li>Event topics and stream predicates</li>
+<li>Schema, types, flows with Cuelang</li>
+</ul>
+
+</body>
+</html>
