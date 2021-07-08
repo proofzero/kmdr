@@ -24,8 +24,8 @@ import (
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
 
-	apply "github.com/proofzero/kmdr/pkg/cmd/apply"
-	version "github.com/proofzero/kmdr/pkg/cmd/version"
+	apply "github.com/proofzero/kmdr/cmd/apply"
+	version "github.com/proofzero/kmdr/cmd/version"
 )
 
 var cfgFile string

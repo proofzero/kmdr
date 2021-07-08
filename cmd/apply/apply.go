@@ -22,8 +22,7 @@ import (
 	"os"
 
 	"cuelang.org/go/cue"
-	"github.com/proofzero/kmdr/pkg/kmdr"
-	"github.com/proofzero/kmdr/pkg/ktrl"
+	"github.com/proofzero/kmdr/api"
 	"github.com/spf13/cobra"
 )
 
@@ -68,15 +67,13 @@ func applyCmdRun(cmd *cobra.Command, args []string) error {
 		applyStr = string(fBytes)
 	}
 
-	// validate the input
-	API := kmdr.NewAPI()
+	API := api.NewAPI()
 	validResources, err := runValidation(applyStr, API.Cue())
 	if err != nil {
 		return err
 	}
 
-	// send the valid input to ktrl
-	client, _ := ktrl.NewKtrlClient()
+	client, _ := api.NewKtrlClient()
 	err = applyResources(validResources, client)
 	if err != nil {
 		return err
@@ -85,10 +82,7 @@ func applyCmdRun(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-// runValidation accepts a string containing cue and validates the contents
-// against a standard definition. Currently "manifests" is the only supported
-// group of values validated.
-func runValidation(applyStr string, cueAPI kmdr.CueAPI) (cue.Value, error) {
+func runValidation(applyStr string, cueAPI api.CueAPI) (cue.Value, error) {
 	applySchemas, err := cueAPI.CompileSchemaFromString(applyStr)
 	if err != nil {
 		return cue.Value{}, err
@@ -105,8 +99,7 @@ func runValidation(applyStr string, cueAPI kmdr.CueAPI) (cue.Value, error) {
 	return applySchemas, err
 }
 
-// applyResources send the cue contents to ktrl and prints out the results/errors
-func applyResources(validResources cue.Value, client *ktrl.Client) error {
+func applyResources(validResources cue.Value, client *api.Client) error {
 	resp, err := client.Apply(validResources)
 	if err != nil {
 		return err
