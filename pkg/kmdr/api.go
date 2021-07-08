@@ -19,13 +19,11 @@ import (
 	"cuelang.org/go/cue/cuecontext"
 )
 
+// NewAPI creates a instance of KmdrAPI
 func NewAPI() KmdrAPI {
-	// home, _ := homedir.Dir()
-	// importPathOption := cue.ImportPath(fmt.Sprintf("%s/.config/kubelt/definitions", home))
 	cueContext := cuecontext.New()
 	cue := cueAPI{
 		context: cueContext,
-		// importPath: importPathOption,
 	}
 	cue.schemaFetcher = cue.fetchSchema
 
@@ -34,14 +32,17 @@ func NewAPI() KmdrAPI {
 	}
 }
 
+// KMDRApi
 type KmdrAPI interface {
 	Cue() CueAPI
 }
 
+// kmdrAPI
 type kmdrAPI struct {
 	cue CueAPI
 }
 
+// Cue returns an instance of the CueAPI
 func (api kmdrAPI) Cue() CueAPI {
 	return api.cue
 }

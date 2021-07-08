@@ -22,6 +22,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// NewVersionCmd creates returns the version command
 func NewVersionCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "version",
@@ -32,10 +33,12 @@ func NewVersionCmd() *cobra.Command {
 	return cmd
 }
 
+// versionCmdRun prints the version information to stdout
 func versionCmdRun(cmd *cobra.Command, args []string) {
 	PrintLogo()
 }
 
+// version represents a semver version format
 type version struct {
 	Major int
 	Minor int
@@ -45,6 +48,7 @@ type version struct {
 // Version struct TODO: read from file?
 var Version = version{Major: 0, Minor: 1, Patch: 0}
 
+// The template for the version export
 const kmdrASCII = `
 
 ██╗  ██╗███╗   ███╗██████╗ ██████╗
@@ -57,6 +61,7 @@ v{{ .Major }}.{{ .Minor }}.{{ .Patch }}
 
 `
 
+// PrintLogo fetches current version information and executes a template
 func PrintLogo() {
 	tmpl, _ := template.New("info").Parse(kmdrASCII)
 	_ = tmpl.Execute(os.Stdout, Version)

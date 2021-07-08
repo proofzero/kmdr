@@ -25,12 +25,14 @@ import (
 
 const UnhandledException = `An unhandled exception occurred.`
 
+// HelpPanic
 type HelpPanic struct {
 	Reason string
 	Help   string
 	Error  error
 }
 
+// screen is the template for exporting meaningful errors to the users terminal
 const screen = `
   {{define "Reason"}}  
   {{ .Reason }}
@@ -44,8 +46,7 @@ const screen = `
   {{ .Error }}
   {{end}}`
 
-// TODO: add https://github.com/fatih/color
-
+// Display executes and returns the error templates with the provides errors
 func (p *HelpPanic) Display(args ...interface{}) (string, error) {
 	p.Reason = fmt.Sprintf(p.Reason, args...)
 	tmpl, _ := template.New("error").Parse(screen)

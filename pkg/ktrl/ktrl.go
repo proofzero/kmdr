@@ -26,23 +26,26 @@ import (
 	kb "github.com/proofzero/proto/pkg/v1alpha1"
 )
 
-// Client for managing grpc client
+// Client for managing the ktrl grpc service
 type Client struct {
 	Connection *grpc.ClientConn
 	Client     kb.KubeltClient
 	Config     *Config
 }
 
+// Config
 type Config struct {
 	Ktrl           KtrlConfig             `toml:"ktrl"`
 	CurrentContext string                 `toml:"current_context"`
 	Contexts       map[string]*kb.Context `toml:"contexts"`
 }
 
+// KtrlConfig
 type KtrlConfig struct {
 	Server ServerConfig
 }
 
+// ServerConfig
 type ServerConfig struct {
 	Port     string `toml:"port"`
 	Protocol string `toml:"protocol"`
@@ -53,6 +56,7 @@ var (
 	ktrlConfig *Config
 )
 
+// init reads in configurations for the kubelt config directory to setup a ktrlClient
 func init() {
 	parentName := "kubelt"
 	fileName := "config"
@@ -92,6 +96,7 @@ func init() {
 	}
 }
 
+// NewKtrlClient returns a new Client
 func NewKtrlClient(options ...grpc.DialOption) (*Client, error) {
 	if ktrlClient != nil {
 		return ktrlClient, nil
