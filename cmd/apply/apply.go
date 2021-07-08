@@ -17,15 +17,12 @@ package apply
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
 
 	"cuelang.org/go/cue"
-	"github.com/proofzero/kmdr/pkg/kmdr"
-	"github.com/proofzero/kmdr/pkg/ktrl"
-	"github.com/proofzero/kmdr/pkg/util"
+	"github.com/proofzero/kmdr/api"
 	"github.com/spf13/cobra"
 )
 
@@ -37,7 +34,7 @@ var minFlagErr string = `Must supply a manifest with "-f" or "--filename"`
 
 var file string
 
-// NewContentCmd represents the content command
+// NewApplyCmd creates returns the apply command
 func NewApplyCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "apply",
@@ -48,31 +45,20 @@ func NewApplyCmd() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&file, "filename", "f", "", "object manifest")
+	cmd.MarkFlagRequired("filename")
 
 	cmd.SetHelpTemplate(applyExtraHelp)
 	return cmd
 }
 
+// applyCmdRun accepts stdnin or a cue file, validates the contents
+// before sending the contents to ktrl
 func applyCmdRun(cmd *cobra.Command, args []string) error {
-	// TODO: migrate to a pre run?
-	if file == "" {
-		p := &util.HelpPanic{
-			Reason: minFlagErr,
-			Help:   applyExtraHelp,
-			Error:  nil,
-		}
-		display, err := p.Display()
-		if err != nil {
-			return err
-		}
-		return errors.New(display)
-	}
-
 	var applyStr string
 	if file == "-" {
 		// Look at stdin for the good stuff
 		reader := bufio.NewReader(os.Stdin)
-		applyStr, _ = reader.ReadString('\n')
+		applyStr, _ = reader.ReadString('\x1D')
 	} else { // read in cue file
 		fBytes, err := ioutil.ReadFile(file)
 		if err != nil {
@@ -81,13 +67,13 @@ func applyCmdRun(cmd *cobra.Command, args []string) error {
 		applyStr = string(fBytes)
 	}
 
-	API := kmdr.NewAPI()
+	API := api.NewAPI()
 	validResources, err := runValidation(applyStr, API.Cue())
 	if err != nil {
 		return err
 	}
 
-	client, _ := ktrl.NewKtrlClient()
+	client, _ := api.NewKtrlClient()
 	err = applyResources(validResources, client)
 	if err != nil {
 		return err
@@ -96,7 +82,7 @@ func applyCmdRun(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func runValidation(applyStr string, cueAPI kmdr.CueAPI) (cue.Value, error) {
+func runValidation(applyStr string, cueAPI api.CueAPI) (cue.Value, error) {
 	applySchemas, err := cueAPI.CompileSchemaFromString(applyStr)
 	if err != nil {
 		return cue.Value{}, err
@@ -111,14 +97,15 @@ func runValidation(applyStr string, cueAPI kmdr.CueAPI) (cue.Value, error) {
 	}
 
 	return applySchemas, err
-
-	// TODO: migrate the below to ktrl
 }
 
-func applyResources(validResources cue.Value, client *ktrl.Client) error {
+func applyResources(validResources cue.Value, client *api.Client) error {
 	resp, err := client.Apply(validResources)
 	if err != nil {
 		return err
+	}
+	if resp.Error != nil {
+		return fmt.Errorf(resp.Error.Message)
 	}
 	for _, v := range resp.Resources.Cue {
 		fmt.Println(v)

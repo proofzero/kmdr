@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package ktrl
+package api
 
 import (
 	"reflect"
@@ -23,7 +23,6 @@ import (
 	"github.com/golang/mock/gomock"
 	"google.golang.org/grpc"
 
-	"github.com/proofzero/kmdr/pkg/kmdr"
 	kb "github.com/proofzero/proto/pkg/v1alpha1"
 	tkb "github.com/proofzero/proto/pkg/v1alpha1/test"
 )
@@ -134,7 +133,7 @@ func TestKtrlClient_Apply(t *testing.T) {
 				gomock.Any(),
 			).Return(&kb.ApplyDefault{}, nil)
 
-			schema, _ := kmdr.NewAPI().Cue().CompileSchemaFromString(validCue)
+			schema, _ := NewAPI().Cue().CompileSchemaFromString(validCue)
 			val := schema.LookupPath(cue.ParsePath("foo"))
 			got, err := k.Apply(val)
 			if (err != nil) != tt.wantErr {

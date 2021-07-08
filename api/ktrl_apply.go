@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package ktrl
+package api
 
 import (
 	"context"
@@ -24,6 +24,7 @@ import (
 	kb "github.com/proofzero/proto/pkg/v1alpha1"
 )
 
+// Apply calls out to ktrl to mutate the kubelt graph using values supplied by the user
 func (k *Client) Apply(cueValue cue.Value) (*kb.ApplyDefault, error) {
 	ctx := k.Config.Contexts[k.Config.CurrentContext]
 	cueString := fmt.Sprint(cueValue)

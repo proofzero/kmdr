@@ -22,7 +22,7 @@ import (
 	"cuelang.org/go/cue"
 	"cuelang.org/go/cue/cuecontext"
 	"github.com/golang/mock/gomock"
-	"github.com/proofzero/kmdr/pkg/kmdr"
+	"github.com/proofzero/kmdr/api"
 )
 
 const validSchema string = `
@@ -90,7 +90,7 @@ func Test_runValidation(t *testing.T) {
 			context := cuecontext.New()
 			d := context.CompileString(validDefinition)
 			v := context.CompileString(tt.args.applyStr)
-			m := kmdr.NewMockCueAPI(ctrl)
+			m := api.NewMockCueAPI(ctrl)
 			m.EXPECT().CompileSchemaFromString(tt.args.applyStr).Return(v, nil).AnyTimes()
 			if tt.wantErr {
 				m.EXPECT().FetchSchema(gomock.Any()).Return(cue.Value{}, fmt.Errorf("bad")).AnyTimes()
