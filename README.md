@@ -23,7 +23,7 @@ The CLI for developing, collaborating, and delivering data-centric applications.
 
 ### Go
 ```bash
-go install github.com/proofzero/kmdr
+go install github.com/proofzero/kmdr@latest
 ```
 
 # Overview
