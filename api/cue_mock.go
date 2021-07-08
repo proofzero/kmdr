@@ -2,7 +2,7 @@
 // Source: pkg/kmdr/cue.go
 
 // Package mock_kmdr is a generated GoMock package.
-package kmdr
+package api
 
 import (
 	reflect "reflect"
