@@ -20,8 +20,6 @@ load("@bazel_gazelle//:def.bzl", "gazelle")
 gazelle(name = "gazelle")
 
 
-# Unix
-# -----------------------------------------------------------------------
 go_library(
     name = "kmdr_lib",
     srcs = ["main.go"],
@@ -30,17 +28,10 @@ go_library(
     deps = ["//cmd"],
 )
 
+# Linux
+# -----------------------------------------------------------------------
 go_binary(
-    name = "kmdr_arm64",
-    goos="linux",
-    goarch="arm64",
-    cgo=True,
-    embed = [":kmdr_lib"],
-    visibility = ["//visibility:public"],
-)
-
-go_binary(
-    name = "kmdr_amd64",
+    name = "kmdr_linux_amd64",
     goos="linux",
     goarch="amd64",
     cgo=True,
@@ -52,10 +43,23 @@ go_binary(
 # Windows
 # -----------------------------------------------------------------------
 go_binary(
-    name = "kmdr_windows_amd",
+    name = "kmdr_windows_amd64",
     goos="windows",
     goarch="amd64",
     cgo=True,
     embed = [":kmdr_lib"],
     visibility = ["//visibility:public"],
 )
+
+# OSX
+# -----------------------------------------------------------------------
+go_binary(
+    name = "kmdr_osx_amd64",
+    goos="darwin",
+    goarch="amd64",
+    cgo=True,
+    embed = [":kmdr_lib"],
+    visibility = ["//visibility:public"],
+)
+
+# OSX
