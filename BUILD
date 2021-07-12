@@ -20,8 +20,18 @@ load("@bazel_gazelle//:def.bzl", "gazelle")
 gazelle(name = "gazelle")
 
 
+# config_setting(
+#  name = "dynlink",
+#  flags = {
+#      "dynlink": "true"
+#  },
+# )
+
 go_library(
     name = "kmdr_lib",
+    # srcs = select({
+    #     ":dynlink": ["main.go"],
+    # }),
     srcs = ["main.go"],
     importpath = "github.com/proofzero/kmdr",
     visibility = ["//visibility:private"],
@@ -35,6 +45,10 @@ go_binary(
     goos="linux",
     goarch="amd64",
     cgo=True,
+    gc_goopts=[
+        "-dynlink"
+    ],
+    linkmode="pie",
     embed = [":kmdr_lib"],
     visibility = ["//visibility:public"],
 )
@@ -47,6 +61,10 @@ go_binary(
     goos="windows",
     goarch="amd64",
     cgo=True,
+    gc_goopts=[
+        "-dynlink"
+    ],
+    linkmode="pie",
     embed = [":kmdr_lib"],
     visibility = ["//visibility:public"],
 )
@@ -58,6 +76,10 @@ go_binary(
     goos="darwin",
     goarch="amd64",
     cgo=True,
+    gc_goopts=[
+        "-dynlink"
+    ],
+    linkmode="pie",
     embed = [":kmdr_lib"],
     visibility = ["//visibility:public"],
 )
