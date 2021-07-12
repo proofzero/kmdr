@@ -1,0 +1,25 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "apply",
+    srcs = ["apply.go"],
+    importpath = "github.com/proofzero/kmdr/cmd/apply",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//api",
+        "@com_github_spf13_cobra//:go_default_library",
+        "@org_cuelang_go//cue:go_default_library",
+    ],
+)
+
+go_test(
+    name = "apply_test",
+    srcs = ["apply_test.go"],
+    embed = [":apply"],
+    deps = [
+        "//api",
+        "@com_github_golang_mock//gomock:go_default_library",
+        "@org_cuelang_go//cue:go_default_library",
+        "@org_cuelang_go//cue/cuecontext:go_default_library",
+    ],
+)
