@@ -19,6 +19,9 @@ load("@bazel_gazelle//:def.bzl", "gazelle")
 # gazelle:prefix github.com/proofzero/kmdr
 gazelle(name = "gazelle")
 
+
+# Unix
+# -----------------------------------------------------------------------
 go_library(
     name = "kmdr_lib",
     srcs = ["main.go"],
@@ -28,12 +31,31 @@ go_library(
 )
 
 go_binary(
-    name = "kmdr",
+    name = "kmdr_arm64",
+    goos="linux",
+    goarch="arm64",
+    cgo=True,
     embed = [":kmdr_lib"],
     visibility = ["//visibility:public"],
 )
 
-# go_binary(
-#     name = "kmdr",
-#     srcs = ["main.go"],
-# )
+go_binary(
+    name = "kmdr_amd64",
+    goos="linux",
+    goarch="amd64",
+    cgo=True,
+    embed = [":kmdr_lib"],
+    visibility = ["//visibility:public"],
+)
+
+
+# Windows
+# -----------------------------------------------------------------------
+go_binary(
+    name = "kmdr_windows_amd",
+    goos="windows",
+    goarch="amd64",
+    cgo=True,
+    embed = [":kmdr_lib"],
+    visibility = ["//visibility:public"],
+)
