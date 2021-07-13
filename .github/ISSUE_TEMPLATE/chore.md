@@ -1,8 +1,7 @@
 ---
 name: CHORE
 about: CHORE issue template
-title: chore: ( title )
-assignees: adrianmaurer
+title: "chore: [CHORE NAME]"
 labels: types » chore
 ---
 

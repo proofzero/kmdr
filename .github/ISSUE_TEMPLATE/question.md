@@ -1,8 +1,7 @@
 ---
 name: QUESTION
 about: QUESTION issue template
-title: question: ( title )
-assignees: adrianmaurer
+title: "question: [QUESTION NAME]"
 labels: forum » topic
 ---
 
