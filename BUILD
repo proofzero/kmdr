@@ -1,8 +1,8 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
-
 # ktrl/BAZEL.build
 
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 load("@bazel_gazelle//:def.bzl", "gazelle")
+load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
 
 # This declares a `gazelle` binary rule that can be run like so:
 #   $ bazel run //:gazelle
@@ -20,23 +20,16 @@ load("@bazel_gazelle//:def.bzl", "gazelle")
 gazelle(name = "gazelle")
 
 
-# config_setting(
-#  name = "dynlink",
-#  flags = {
-#      "dynlink": "true"
-#  },
-# )
-
 go_library(
     name = "kmdr_lib",
-    # srcs = select({
-    #     ":dynlink": ["main.go"],
-    # }),
     srcs = ["main.go"],
     importpath = "github.com/proofzero/kmdr",
     visibility = ["//visibility:private"],
     deps = ["//cmd"],
 )
+
+
+# TODO: add version numbers for genrules
 
 # Linux
 # -----------------------------------------------------------------------
@@ -53,6 +46,13 @@ go_binary(
     visibility = ["//visibility:public"],
 )
 
+genrule(
+    name = "linux_binary",
+    srcs = [":kmdr_linux_amd64"],
+    outs = ["exec/kmdr_linux_amd64"],
+    cmd = "cp $(SRCS) $@",
+)
+
 
 # Windows
 # -----------------------------------------------------------------------
@@ -67,6 +67,14 @@ go_binary(
     linkmode="pie",
     embed = [":kmdr_lib"],
     visibility = ["//visibility:public"],
+    out="kmdr",
+)
+
+genrule(
+    name = "windows_binary",
+    srcs = [":kmdr_windows_amd64"],
+    outs = ["exec/kmdr_windows_amd64"],
+    cmd = "cp $(SRCS) $@",
 )
 
 # OSX
@@ -82,6 +90,12 @@ go_binary(
     linkmode="pie",
     embed = [":kmdr_lib"],
     visibility = ["//visibility:public"],
+    out="kmdr",
 )
 
-# OSX
+genrule(
+    name = "osx_binary",
+    srcs = [":kmdr_osx_amd64"],
+    outs = ["exec/kmdr_darwin_amd64"],
+    cmd = "cp $(SRCS) $@",
+)

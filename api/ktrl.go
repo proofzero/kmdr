@@ -57,7 +57,7 @@ var (
 )
 
 // init reads in configurations for the kubelt config directory to setup a ktrlClient
-func init() {
+func initConfig() {
 	parentName := "kubelt"
 	fileName := "config"
 	configType := "toml"
@@ -83,7 +83,7 @@ func init() {
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			// Config file not found; ignore error if desired.
-			log.Fatal("missing config file:", err)
+			log.Print("missing config file:", err)
 		} else {
 			// Config file was found but another error was produced.
 			log.Fatal("error loading configuration:", err)
@@ -101,6 +101,9 @@ func NewKtrlClient(options ...grpc.DialOption) (*Client, error) {
 	if ktrlClient != nil {
 		return ktrlClient, nil
 	}
+
+	initConfig()
+
 	if len(options) == 0 {
 		options = []grpc.DialOption{
 			grpc.WithInsecure(),
