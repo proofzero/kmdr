@@ -16,10 +16,6 @@ labels: forum » topic
 * [ ] Question ?
 * [ ] Question ?
 
-# Who
-
-* @proofzero/( team )
-
 # Notes
 
 * N/A
