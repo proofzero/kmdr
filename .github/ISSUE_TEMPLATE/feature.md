@@ -1,8 +1,7 @@
 ---
 name: FEATURE
 about: FEATURE issue template
-title: feat: ( title )
-assignees: adrianmaurer
+title: "feat: [FEATURE NAME]"
 labels: types » feature
 ---
 

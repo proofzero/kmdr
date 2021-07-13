@@ -1,9 +1,8 @@
 ---
 name: BUG
 about: BUG issue template
-title: bug: ( title )
-assignees: adrianmaurer
-labels: types » bug/fix
+title: "bug: [BUG NAME]"
+labels: types » bug
 ---
 
 # Why
