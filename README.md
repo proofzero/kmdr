@@ -6,6 +6,7 @@
 | . \| |  | | |__| | | \ \  | |____| |____ _| |_ 
 |_|\_\_|  |_|_____/|_|  \_\  \_____|______|_____|
 ```
+ ![build](https://github.com/proofzero/kmdr/actions/workflows/bazel.yaml/badge.svg)
 
 > **NOTE: This project is a work in progress**
 
