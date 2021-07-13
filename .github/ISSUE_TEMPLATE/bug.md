@@ -14,13 +14,7 @@ labels: types » bug/fix
 
 ## Steps to Reproduce
 
-1. `terraform plan`
-1. `terraform apply`
-1. See output below
-
-```
-ERROR: terraform apply failed
-```
+> List steps to reproduce
 
 ## Expected Behavior
 
@@ -28,19 +22,7 @@ ERROR: terraform apply failed
 
 # What
 
-| Tool | Component | Version |
-| - | - | - |
-| AWS | `cli` | `v#.#.#` |
-| Gcloud | `cli` | `v#.#.#` |
-| Terraform | `cli` | `v#.#.#` |
-| Terraform | `provider.aws` | `v#.#.#` |
-| Terraform | `provider.google` | `v#.#.#` |
-| Terraform | `provider.vault` | `v#.#.#` |
-| Vault | `cli` | `v#.#.#` |
-
-# Who
-
-* @proofzero/( team )
+> Describe the bug
 
 # Notes
 

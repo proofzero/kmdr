@@ -45,6 +45,10 @@ labels:
     color: '#336699'
     description: New functionality.
 
+  - name: chore
+  
+  - name: question
+
   - name: first-timers-only
 
 milestones:

@@ -16,10 +16,6 @@ labels: types » chore
 * [ ] Chore #0
 * [ ] Chore #0
 
-# Who
-
-* @proofzero/( team )
-
 # Notes
 
 * N/A

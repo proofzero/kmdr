@@ -16,10 +16,6 @@ labels: types » feature
 * [ ] Feature #0
 * [ ] Feature #0
 
-# Who
-
-* @proofzero/( team )
-
 # Notes
 
 * N/A
