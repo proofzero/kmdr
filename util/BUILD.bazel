@@ -5,7 +5,7 @@ go_library(
     srcs = ["panic.go"],
     importpath = "github.com/proofzero/kmdr/util",
     visibility = ["//visibility:public"],
-    deps = ["@com_github_fatih_color//:go_default_library"],
+    deps = ["@com_github_fatih_color//:color"],
 )
 
 go_test(
