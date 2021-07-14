@@ -38,7 +38,8 @@ clean:
 
 build:
 	$(info ******************** building binary ********************)
-	go build -o kmdr ./pkg
+	bazel run //:gazelle
+	bazel build //...
 
 install_local:
 	$(info ******************** installing locally ********************)

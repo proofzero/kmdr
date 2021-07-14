@@ -23,7 +23,13 @@ var setupExtraHelp string = `{{with (or .Long .Short)}}{{. | trimTrailingWhitesp
 {{end}}{{if or .Runnable .HasSubCommands}}{{.UsageString}}{{end}}
 `
 
-// NewApplyCmd creates returns the apply command
+var (
+	username string
+	anon     string
+	ktrl     bool
+)
+
+// NewSetupCmd creates returns the apply command
 func NewSetupCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "setup",
@@ -32,16 +38,20 @@ func NewSetupCmd() *cobra.Command {
 		RunE:  setupCmdRun,
 	}
 
-	// cmd.Flags().StringVarP(&file, "filename", "f", "", "object manifest")
-	// cmd.MarkFlagRequired("filename")
+	cmd.Flags().StringVarP(&username, "username", "u", "", "choose desired username")
+	cmd.Flags().StringVarP(&anon, "anonymous", "a", "", "use an auto-generated username")
+	cmd.Flags().BoolVarP(&ktrl, "init-ktrl", "k", true, "initialize an ktrl daemon if not already (default true)")
 
 	cmd.SetHelpTemplate(setupExtraHelp)
 	return cmd
 }
 
-// setupCmdRun accepts stdnin or a cue file, validates the contents
-// before sending the contents to ktrl
+// setupCmdRun bootstraps the local enviroment and configurations
 func setupCmdRun(cmd *cobra.Command, args []string) error {
+	// Check if ktrl is installed and running
+
+	// If not installed return error?
+
 	// client, _ := api.NewKtrlClient()
 	return nil
 }
