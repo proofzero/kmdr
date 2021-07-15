@@ -50,11 +50,7 @@ func NewSetupCmd() *cobra.Command {
 
 // setupCmdRun bootstraps the local environment and configurations
 func setupCmdRun(cmd *cobra.Command, args []string) error {
-	// init a ktrl client. will error out if no configs found
 	// client, _ := api.NewKtrlClient()
-	// Check if ktrl is installed and running
-
-	// If not installed return error?
 
 	return nil
 }

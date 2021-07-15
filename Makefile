@@ -25,13 +25,13 @@ lint:
 
 test: install_deps lint
 	$(info ******************** running tests ********************)
-	RICHGO_LOCAL=1 richgo test -v ./pkg/... -coverprofile .coverageprofile
+	RICHGO_LOCAL=1 richgo test -v ./... -coverprofile .coverageprofile
 
 install_deps:
 	$(info ******************** downloading dependencies ********************)
 	go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.40.1
 	go get -u github.com/kyoh86/richgo
-	go get -v ./pkg/...
+	go get -v ./...
 
 clean:
 	rm -rf $(BIN)
@@ -43,7 +43,7 @@ build:
 
 install_local:
 	$(info ******************** installing locally ********************)
-	go build -o kmdr ./pkg
+	go install .
 
 cue:
 	cue eval ./cue/ -c -e space -t name=foo -t version=v1alpha1 --out=yaml

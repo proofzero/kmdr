@@ -31,8 +31,6 @@ var applyExtraHelp string = `{{with (or .Long .Short)}}{{. | trimTrailingWhitesp
 {{end}}{{if or .Runnable .HasSubCommands}}{{.UsageString}}{{end}}
 `
 
-var minFlagErr string = `Must supply a manifest with "-f" or "--filename"`
-
 var file string
 
 // NewApplyCmd creates returns the apply command
@@ -47,7 +45,7 @@ func NewApplyCmd() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&file, "filename", "f", "", "object manifest")
-	cmd.MarkFlagRequired("filename")
+	_ = cmd.MarkFlagRequired("filename")
 
 	cmd.SetHelpTemplate(applyExtraHelp)
 	return cmd
@@ -75,7 +73,7 @@ func applyCmdRun(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	client, _ := api.NewKtrlClient()
+	client, _ := api.NewKtrlClient(api.Config{})
 	err = applyResources(validResources, client)
 	if err != nil {
 		return err

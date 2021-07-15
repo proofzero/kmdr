@@ -20,6 +20,7 @@ import (
 	"path"
 
 	"github.com/adrg/xdg"
+	"github.com/imdario/mergo"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 
@@ -57,7 +58,7 @@ var (
 )
 
 // init reads in configurations for the kubelt config directory to setup a ktrlClient
-func InitConfig() error {
+func initConfig() error {
 	parentName := "kubelt"
 	fileName := "config"
 	configType := "toml"
@@ -83,30 +84,29 @@ func InitConfig() error {
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			// Config file not found; ignore error if desired.
-			return fmt.Errorf("missing config file:", err)
+			fmt.Printf("missing config file: %s", err)
 		} else {
 			// Config file was found but another error was produced.
-			return fmt.Errorf("error loading configuration:", err)
+			return fmt.Errorf("error loading configuration: %s", err)
 		}
 	}
 
 	err := viper.Unmarshal(&ktrlConfig)
 	if err != nil {
-		return fmt.Errorf("could not unmarshal config")
+		return fmt.Errorf("could not unmarshal config: %s", err)
 	}
 
 	return nil
 }
 
 // NewKtrlClient returns a new Client
-func NewKtrlClient(options ...grpc.DialOption) (*Client, error) {
+func NewKtrlClient(config Config, options ...grpc.DialOption) (*Client, error) {
 	if ktrlClient != nil {
 		return ktrlClient, nil
 	}
 
-	if err := InitConfig(); err != nil {
-		return nil, err
-	}
+	_ = initConfig()
+	_ = mergo.Merge(&ktrlConfig, config)
 
 	if len(options) == 0 {
 		options = []grpc.DialOption{

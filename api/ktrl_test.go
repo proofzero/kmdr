@@ -29,6 +29,7 @@ import (
 
 func TestNewKtrlClient(t *testing.T) {
 	type args struct {
+		config  Config
 		options []grpc.DialOption
 	}
 	tests := []struct {
@@ -39,7 +40,7 @@ func TestNewKtrlClient(t *testing.T) {
 	}{
 		{
 			name: "create ktrl client with no args",
-			args: args{options: nil},
+			args: args{config: Config{}, options: nil},
 			want: Config{
 				Ktrl: KtrlConfig{
 					Server: ServerConfig{
@@ -52,7 +53,7 @@ func TestNewKtrlClient(t *testing.T) {
 		},
 		{
 			name: "create ktrl client with args",
-			args: args{options: []grpc.DialOption{grpc.WithInsecure()}},
+			args: args{config: Config{}, options: []grpc.DialOption{grpc.WithInsecure()}},
 			want: Config{
 				Ktrl: KtrlConfig{
 					Server: ServerConfig{
@@ -66,7 +67,7 @@ func TestNewKtrlClient(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := NewKtrlClient(tt.args.options...)
+			got, err := NewKtrlClient(tt.args.config, tt.args.options...)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NewKtrlClient() error = %v, wantErr %v", err, tt.wantErr)
 				return
