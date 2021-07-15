@@ -16,6 +16,7 @@ limitations under the License.
 package setup
 
 import (
+	"github.com/proofzero/kmdr/util"
 	"github.com/spf13/cobra"
 )
 
@@ -32,10 +33,11 @@ var (
 // NewSetupCmd creates returns the apply command
 func NewSetupCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "setup",
-		Short: "setup kubelt kmdr",
-		Long:  `setup kubelt kmdr`,
-		RunE:  setupCmdRun,
+		Use:     "setup",
+		Short:   "setup kubelt kmdr",
+		Long:    `setup kubelt kmdr`,
+		PreRunE: util.CheckIfKtrlIsInstalledAndRunning,
+		RunE:    setupCmdRun,
 	}
 
 	cmd.Flags().StringVarP(&username, "username", "u", "", "choose desired username")
@@ -46,12 +48,13 @@ func NewSetupCmd() *cobra.Command {
 	return cmd
 }
 
-// setupCmdRun bootstraps the local enviroment and configurations
+// setupCmdRun bootstraps the local environment and configurations
 func setupCmdRun(cmd *cobra.Command, args []string) error {
+	// init a ktrl client. will error out if no configs found
+	// client, _ := api.NewKtrlClient()
 	// Check if ktrl is installed and running
 
 	// If not installed return error?
 
-	// client, _ := api.NewKtrlClient()
 	return nil
 }

@@ -16,7 +16,7 @@ limitations under the License.
 package api
 
 import (
-	"log"
+	"fmt"
 	"path"
 
 	"github.com/adrg/xdg"
@@ -57,7 +57,7 @@ var (
 )
 
 // init reads in configurations for the kubelt config directory to setup a ktrlClient
-func initConfig() {
+func InitConfig() error {
 	parentName := "kubelt"
 	fileName := "config"
 	configType := "toml"
@@ -83,17 +83,19 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			// Config file not found; ignore error if desired.
-			log.Print("missing config file:", err)
+			return fmt.Errorf("missing config file:", err)
 		} else {
 			// Config file was found but another error was produced.
-			log.Fatal("error loading configuration:", err)
+			return fmt.Errorf("error loading configuration:", err)
 		}
 	}
 
 	err := viper.Unmarshal(&ktrlConfig)
 	if err != nil {
-		log.Fatal("could not unmarshal config")
+		return fmt.Errorf("could not unmarshal config")
 	}
+
+	return nil
 }
 
 // NewKtrlClient returns a new Client
@@ -102,7 +104,9 @@ func NewKtrlClient(options ...grpc.DialOption) (*Client, error) {
 		return ktrlClient, nil
 	}
 
-	initConfig()
+	if err := InitConfig(); err != nil {
+		return nil, err
+	}
 
 	if len(options) == 0 {
 		options = []grpc.DialOption{
@@ -112,7 +116,7 @@ func NewKtrlClient(options ...grpc.DialOption) (*Client, error) {
 
 	conn, err := grpc.Dial(ktrlConfig.Ktrl.Server.Port, options...)
 	if err != nil {
-		log.Fatalf("fail to dial: %v", err)
+		return nil, fmt.Errorf("fail to dial: %v", err)
 	}
 	client := kb.NewKubeltClient(conn)
 

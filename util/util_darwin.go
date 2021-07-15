@@ -14,3 +14,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 package util
+
+import (
+	"os/exec"
+	"regexp"
+)
+
+func checkKtrlProcess() bool {
+	output, err := exec.Command("launchctl", "list", "ktrl").Output()
+	if err == nil {
+		if matched, err := regexp.MatchString("ktrl", string(output)); err == nil && matched {
+			return true
+		}
+	}
+	return false
+}

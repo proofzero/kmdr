@@ -23,6 +23,7 @@ import (
 
 	"cuelang.org/go/cue"
 	"github.com/proofzero/kmdr/api"
+	"github.com/proofzero/kmdr/util"
 	"github.com/spf13/cobra"
 )
 
@@ -37,11 +38,12 @@ var file string
 // NewApplyCmd creates returns the apply command
 func NewApplyCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "apply",
-		Short: "apply changes to kubelt resources",
-		Long:  `apply changes to kubelt resources`,
-		Args:  cobra.RangeArgs(0, 1),
-		RunE:  applyCmdRun,
+		Use:     "apply",
+		Short:   "apply changes to kubelt resources",
+		Long:    `apply changes to kubelt resources`,
+		PreRunE: util.CheckIfKtrlIsInstalledAndRunning,
+		Args:    cobra.RangeArgs(0, 1),
+		RunE:    applyCmdRun,
 	}
 
 	cmd.Flags().StringVarP(&file, "filename", "f", "", "object manifest")
