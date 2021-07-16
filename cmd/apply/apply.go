@@ -23,7 +23,6 @@ import (
 
 	"cuelang.org/go/cue"
 	"github.com/proofzero/kmdr/api"
-	"github.com/proofzero/kmdr/util"
 	"github.com/spf13/cobra"
 )
 
@@ -36,12 +35,11 @@ var file string
 // NewApplyCmd creates returns the apply command
 func NewApplyCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "apply",
-		Short:   "apply changes to kubelt resources",
-		Long:    `apply changes to kubelt resources`,
-		PreRunE: util.CheckIfKtrlIsInstalledAndRunning,
-		Args:    cobra.RangeArgs(0, 1),
-		RunE:    applyCmdRun,
+		Use:   "apply",
+		Short: "apply changes to kubelt resources",
+		Long:  `apply changes to kubelt resources`,
+		Args:  cobra.RangeArgs(0, 1),
+		RunE:  applyCmdRun,
 	}
 
 	cmd.Flags().StringVarP(&file, "filename", "f", "", "object manifest")
@@ -68,13 +66,13 @@ func applyCmdRun(cmd *cobra.Command, args []string) error {
 	}
 
 	API := api.NewAPI()
+
 	validResources, err := runValidation(applyStr, API.Cue())
 	if err != nil {
 		return err
 	}
 
-	client, _ := api.NewKtrlClient(api.Config{})
-	err = applyResources(validResources, client)
+	err = applyResources(validResources, API.Ktrl())
 	if err != nil {
 		return err
 	}
@@ -82,25 +80,28 @@ func applyCmdRun(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func runValidation(applyStr string, cueAPI api.CueAPI) (cue.Value, error) {
-	applySchemas, err := cueAPI.CompileSchemaFromString(applyStr)
+func runValidation(applyStr string, cueApi api.CueAPI) (cue.Value, error) {
+	applySchemas, err := cueApi.CompileSchemaFromString(applyStr)
 	if err != nil {
 		return cue.Value{}, err
 	}
 
 	manifests := applySchemas.Value().LookupPath(cue.ParsePath("manifests"))
-	schemas, _ := cueAPI.FetchSchema("kubelt://kmdr")
+	schemas, _ := cueApi.FetchSchema("kubelt://kmdr")
 	mandef := schemas.LookupPath(cue.ParsePath("#manifests"))
 
-	if err := cueAPI.ValidateResource(manifests, mandef); err != nil {
+	if err := cueApi.ValidateResource(manifests, mandef); err != nil {
 		return cue.Value{}, err
 	}
 
 	return applySchemas, err
 }
 
-func applyResources(validResources cue.Value, client *api.Client) error {
-	resp, err := client.Apply(validResources)
+func applyResources(validResources cue.Value, ktrlApi api.KtrlAPI) error {
+	if err := ktrlApi.IsAvailable(); err != nil {
+		return err
+	}
+	resp, err := ktrlApi.Apply(validResources)
 	if err != nil {
 		return err
 	}

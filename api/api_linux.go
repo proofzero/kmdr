@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package util
+package api
 
 import (
 	"os/exec"
@@ -21,11 +21,12 @@ import (
 )
 
 func checkKtrlProcess() bool {
-	output, err := exec.Command("launchctl", "list", "ktrl").Output()
+	output, err := exec.Command("systemctl", "status", "ktrl.service").Output()
 	if err == nil {
-		if matched, err := regexp.MatchString("ktrl", string(output)); err == nil && matched {
+		if matched, err := regexp.MatchString("Active: active", string(output)); err == nil && matched {
 			return true
 		}
 	}
+
 	return false
 }

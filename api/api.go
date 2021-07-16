@@ -19,30 +19,49 @@ import (
 	"cuelang.org/go/cue/cuecontext"
 )
 
+// this api is used multuple times during an execution
+// so we create a singleton
+var kmdrapi *kmdrAPI
+
 // NewAPI creates a instance of KmdrAPI
 func NewAPI() KmdrAPI {
+	if kmdrapi != nil {
+		return *kmdrapi
+	}
+
 	cueContext := cuecontext.New()
 	cue := cueAPI{
 		context: cueContext,
 	}
 	cue.schemaFetcher = cue.fetchSchema
 
-	return kmdrAPI{
-		cue: cue,
+	ktrl, _ := newKtrlAPI()
+
+	kmdrapi = &kmdrAPI{
+		cue:  cue,
+		ktrl: ktrl,
 	}
+	return *kmdrapi
 }
 
-// KMDRApi
+// KmdrApi
 type KmdrAPI interface {
 	Cue() CueAPI
+	Ktrl() KtrlAPI
 }
 
 // kmdrAPI
 type kmdrAPI struct {
-	cue CueAPI
+	cue  CueAPI
+	ktrl KtrlAPI
 }
 
 // Cue returns an instance of the CueAPI
 func (api kmdrAPI) Cue() CueAPI {
 	return api.cue
+}
+
+// Ktrl returns an instance of the KtrlAPI
+func (api kmdrAPI) Ktrl() KtrlAPI {
+	return api.ktrl
 }

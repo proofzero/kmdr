@@ -2,19 +2,10 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "util",
-    srcs = [
-        "cmd.go",
-        "panic.go",
-        "util_darwin.go",
-        "util_linux.go",
-        "util_windows.go",
-    ],
+    srcs = ["panic.go"],
     importpath = "github.com/proofzero/kmdr/util",
     visibility = ["//visibility:public"],
-    deps = [
-        "@com_github_fatih_color//:color",
-        "@com_github_spf13_cobra//:cobra",
-    ],
+    deps = ["@com_github_fatih_color//:color"],
 )
 
 go_test(

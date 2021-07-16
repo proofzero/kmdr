@@ -13,26 +13,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-
 package api
 
 import (
-	"context"
-	"fmt"
-
-	"cuelang.org/go/cue"
-	kb "github.com/proofzero/proto/pkg/v1alpha1"
+	"bytes"
+	"os/exec"
 )
 
-// Apply calls out to ktrl to mutate the kubelt graph using values supplied by the user
-func (k *Client) Apply(cueValue cue.Value) (*kb.ApplyDefault, error) {
-	ctx := k.Config.Contexts[k.Config.CurrentContext]
-	cueString := fmt.Sprint(cueValue)
-	fmt.Println(cueString)
-	resource := &kb.Cue{
-		Cue: cueString,
+func checkKtrlProcess() bool {
+	cmd := exec.Command("TASKLIST", "/FI", "imagename eq ktrl.exe")
+	result, err := cmd.Output()
+	if err != nil {
+		return false
 	}
-	request := &kb.ApplyRequest{Resources: resource, Context: ctx}
-	r, err := k.Client.Apply(context.Background(), request)
-	return r, err
+	return !bytes.Contains(result, []byte("No tasks are running"))
 }

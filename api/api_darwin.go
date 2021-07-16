@@ -13,23 +13,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package util
+package api
 
 import (
-	"fmt"
 	"os/exec"
-
-	"github.com/spf13/cobra"
+	"regexp"
 )
 
-func CheckIfKtrlIsInstalledAndRunning(cmd *cobra.Command, args []string) error {
-	// check if the ktrl executable exists
-	if _, err := exec.LookPath("ktrl"); err != nil {
-		return fmt.Errorf("ktrl is not installed.")
+func checkKtrlProcess() bool {
+	output, err := exec.Command("launchctl", "list", "ktrl").Output()
+	if err == nil {
+		if matched, err := regexp.MatchString("ktrl", string(output)); err == nil && matched {
+			return true
+		}
 	}
-	// check if ktrl is running
-	if !checkKtrlProcess() {
-		return fmt.Errorf("ktrl is not running")
-	}
-	return nil
+	return false
 }

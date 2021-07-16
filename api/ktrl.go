@@ -16,49 +16,79 @@ limitations under the License.
 package api
 
 import (
+	"context"
+	"errors"
 	"fmt"
+	"os/exec"
 	"path"
 
+	"cuelang.org/go/cue"
 	"github.com/adrg/xdg"
-	"github.com/imdario/mergo"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 
+	"github.com/proofzero/kmdr/util"
 	kb "github.com/proofzero/proto/pkg/v1alpha1"
 )
 
-// Client for managing the ktrl grpc service
-type Client struct {
-	Connection *grpc.ClientConn
-	Client     kb.KubeltClient
-	Config     *Config
+// KtrlAPI
+type KtrlAPI interface {
+	InitConfig() error
+	IsAvailable() error
+	Apply(cueValue cue.Value) (*kb.ApplyDefault, error)
 }
 
-// Config
-type Config struct {
-	Ktrl           KtrlConfig             `toml:"ktrl"`
+// ktrlAPI for managing the ktrl grpc service
+type ktrlAPI struct {
+	Connection *grpc.ClientConn
+	Client     kb.KubeltClient
+	Config     ktrlConfig
+}
+
+// ktrlConfig
+type ktrlConfig struct {
+	Server         serverConfig           `toml:"ktrl"`
 	CurrentContext string                 `toml:"current_context"`
 	Contexts       map[string]*kb.Context `toml:"contexts"`
 }
 
-// KtrlConfig
-type KtrlConfig struct {
-	Server ServerConfig
-}
-
-// ServerConfig
-type ServerConfig struct {
+// serverConfig
+type serverConfig struct {
 	Port     string `toml:"port"`
 	Protocol string `toml:"protocol"`
 }
 
-var (
-	ktrlClient *Client
-	ktrlConfig *Config
-)
+// NewKtrlAPI returns a new Client
+func newKtrlAPI(options ...grpc.DialOption) (KtrlAPI, error) {
+	ktrl := ktrlAPI{
+		Config: ktrlConfig{
+			Server: serverConfig{},
+		},
+	}
+	err := ktrl.InitConfig()
+	if err != nil {
+		return ktrl, err
+	}
+
+	if len(options) == 0 {
+		options = []grpc.DialOption{
+			grpc.WithInsecure(),
+		}
+	}
+
+	conn, err := grpc.Dial(ktrl.Config.Server.Port, options...)
+	if err != nil {
+		return ktrl, fmt.Errorf("fail to dial: %v", err)
+	}
+	ktrl.Connection = conn
+
+	ktrl.Client = kb.NewKubeltClient(conn)
+
+	return ktrl, err
+}
 
 // init reads in configurations for the kubelt config directory to setup a ktrlClient
-func initConfig() error {
+func (ktrl ktrlAPI) InitConfig() error {
 	parentName := "kubelt"
 	fileName := "config"
 	configType := "toml"
@@ -91,7 +121,7 @@ func initConfig() error {
 		}
 	}
 
-	err := viper.Unmarshal(&ktrlConfig)
+	err := viper.Unmarshal(&ktrl.Config)
 	if err != nil {
 		return fmt.Errorf("could not unmarshal config: %s", err)
 	}
@@ -99,31 +129,35 @@ func initConfig() error {
 	return nil
 }
 
-// NewKtrlClient returns a new Client
-func NewKtrlClient(config Config, options ...grpc.DialOption) (*Client, error) {
-	if ktrlClient != nil {
-		return ktrlClient, nil
-	}
-
-	_ = initConfig()
-	_ = mergo.Merge(&ktrlConfig, config)
-
-	if len(options) == 0 {
-		options = []grpc.DialOption{
-			grpc.WithInsecure(),
+// IsAvailable checks if the ktrl daemon is installed and running
+func (ktrl ktrlAPI) IsAvailable() error {
+	if _, err := exec.LookPath("ktrl"); err != nil {
+		p := util.HelpPanic{
+			Reason: `ktrl is not installed and running.`,
 		}
+		display, _ := p.Display()
+		return errors.New(display)
 	}
+	// check if ktrl is running
+	if !checkKtrlProcess() {
+		p := util.HelpPanic{
+			Reason: `ktrl is not running.`,
+		}
+		display, _ := p.Display()
+		return errors.New(display)
+	}
+	return nil
+}
 
-	conn, err := grpc.Dial(ktrlConfig.Ktrl.Server.Port, options...)
-	if err != nil {
-		return nil, fmt.Errorf("fail to dial: %v", err)
+// Apply calls out to ktrl to mutate the kubelt graph using values supplied by the user
+func (ktrl ktrlAPI) Apply(cueValue cue.Value) (*kb.ApplyDefault, error) {
+	ctx := ktrl.Config.Contexts[ktrl.Config.CurrentContext]
+	cueString := fmt.Sprint(cueValue)
+	fmt.Println(cueString)
+	resource := &kb.Cue{
+		Cue: cueString,
 	}
-	client := kb.NewKubeltClient(conn)
-
-	ktrlClient = &Client{
-		Connection: conn,
-		Client:     client,
-		Config:     ktrlConfig,
-	}
-	return ktrlClient, err
+	request := &kb.ApplyRequest{Resources: resource, Context: ctx}
+	r, err := ktrl.Client.Apply(context.Background(), request)
+	return r, err
 }

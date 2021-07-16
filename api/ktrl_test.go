@@ -21,63 +21,10 @@ import (
 
 	"cuelang.org/go/cue"
 	"github.com/golang/mock/gomock"
-	"google.golang.org/grpc"
-
 	kb "github.com/proofzero/proto/pkg/v1alpha1"
 	tkb "github.com/proofzero/proto/pkg/v1alpha1/test"
+	"google.golang.org/grpc"
 )
-
-func TestNewKtrlClient(t *testing.T) {
-	type args struct {
-		config  Config
-		options []grpc.DialOption
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    Config
-		wantErr bool
-	}{
-		{
-			name: "create ktrl client with no args",
-			args: args{config: Config{}, options: nil},
-			want: Config{
-				Ktrl: KtrlConfig{
-					Server: ServerConfig{
-						Port:     ":50051",
-						Protocol: "tcp",
-					},
-				},
-			},
-			wantErr: false,
-		},
-		{
-			name: "create ktrl client with args",
-			args: args{config: Config{}, options: []grpc.DialOption{grpc.WithInsecure()}},
-			want: Config{
-				Ktrl: KtrlConfig{
-					Server: ServerConfig{
-						Port:     ":50051",
-						Protocol: "tcp",
-					},
-				},
-			},
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := NewKtrlClient(tt.args.config, tt.args.options...)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("NewKtrlClient() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(*got.Config, tt.want) {
-				t.Errorf("NewKtrlClient() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
 
 const validCue = `
 foo: {
@@ -93,7 +40,7 @@ func TestKtrlClient_Apply(t *testing.T) {
 	type fields struct {
 		Connection *grpc.ClientConn
 		Client     *tkb.MockKubeltClient
-		Config     *Config
+		Config     ktrlConfig
 	}
 	type args struct{}
 	tests := []struct {
@@ -108,8 +55,7 @@ func TestKtrlClient_Apply(t *testing.T) {
 			fields: fields{
 				Connection: nil,
 				Client:     tkb.NewMockKubeltClient(ctrl),
-				Config: &Config{
-					Ktrl:           KtrlConfig{},
+				Config: ktrlConfig{
 					CurrentContext: "",
 					Contexts: map[string]*kb.Context{
 						"default": {Name: "test"},
@@ -123,7 +69,7 @@ func TestKtrlClient_Apply(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			k := &Client{
+			k := &ktrlAPI{
 				Connection: tt.fields.Connection,
 				Client:     tt.fields.Client,
 				Config:     tt.fields.Config,

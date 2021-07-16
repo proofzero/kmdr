@@ -7,7 +7,6 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//api",
-        "//util",
         "@com_github_spf13_cobra//:cobra",
         "@org_cuelang_go//cue",
     ],
