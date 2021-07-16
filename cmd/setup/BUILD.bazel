@@ -5,7 +5,11 @@ go_library(
     srcs = ["setup.go"],
     importpath = "github.com/proofzero/kmdr/cmd/setup",
     visibility = ["//visibility:public"],
-    deps = ["@com_github_spf13_cobra//:cobra"],
+    deps = [
+        "//api",
+        "//util",
+        "@com_github_spf13_cobra//:cobra",
+    ],
 )
 
 go_test(
