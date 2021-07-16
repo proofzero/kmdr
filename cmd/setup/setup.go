@@ -16,8 +16,10 @@ limitations under the License.
 package setup
 
 import (
-	"fmt"
+	"errors"
 
+	"github.com/proofzero/kmdr/api"
+	"github.com/proofzero/kmdr/util"
 	"github.com/spf13/cobra"
 )
 
@@ -38,13 +40,13 @@ func NewSetupCmd() *cobra.Command {
 		Short: "setup kubelt kmdr",
 		Long:  `setup kubelt kmdr`,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
-			// ktrl := new(api.KtrlAPI)
-			// err := ktrl.IsAvailable()
-			// fmt.Println(err)
-
-			fmt.Println(username)
-			fmt.Println(anon)
-
+			if username == "" && anon == "" {
+				p := util.HelpPanic{
+					Reason: "You must set --username or --anonymous flag when running setup.",
+				}
+				display, _ := p.Display()
+				return errors.New(display)
+			}
 			return nil
 		},
 		RunE: setupCmdRun,
@@ -60,10 +62,13 @@ func NewSetupCmd() *cobra.Command {
 
 // setupCmdRun bootstraps the local enviroment and configurations
 func setupCmdRun(cmd *cobra.Command, args []string) error {
-	// Check if ktrl is installed and running
+	// setup username keys
 
-	// If not installed return error?
+	API := api.NewAPI()
 
-	// client, _ := api.NewKtrlClient()
+	if err := API.Ktrl().IsAvailable(); err != nil {
+		return err
+	}
+
 	return nil
 }
