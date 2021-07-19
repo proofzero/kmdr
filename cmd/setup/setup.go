@@ -17,7 +17,11 @@ package setup
 
 import (
 	"errors"
+	"fmt"
+	"io/ioutil"
+	"os"
 
+	"github.com/mitchellh/go-homedir"
 	"github.com/proofzero/kmdr/api"
 	"github.com/proofzero/kmdr/util"
 	"github.com/spf13/cobra"
@@ -46,6 +50,8 @@ func NewSetupCmd() *cobra.Command {
 				}
 				display, _ := p.Display()
 				return errors.New(display)
+			} else if anon != "" {
+				username = anon
 			}
 			return nil
 		},
@@ -62,13 +68,33 @@ func NewSetupCmd() *cobra.Command {
 
 // setupCmdRun bootstraps the local enviroment and configurations
 func setupCmdRun(cmd *cobra.Command, args []string) error {
-	// setup username keys
-
 	API := api.NewAPI()
+	// generate keys for user
+	pk, sk, err := util.GenerateUserKeys()
+	if err != nil {
+		return err
+	}
+	// write the keypair out to users config directory
+	home, _ := homedir.Dir()
+	pkFile := fmt.Sprintf("%s/.config/kubelt/keys/%s.pub", home, username)
+	skFile := fmt.Sprintf("%s/.config/kubelt/keys/%s", home, username)
+	_, err = os.Create(fmt.Sprintf("%s/.config/kubelt/keys", home))
+	err = ioutil.WriteFile(pkFile, pk[:], 0644)
+	err = ioutil.WriteFile(skFile, sk[:], 0644)
+	if err != nil {
+		return err
+	}
 
+	// dat, _ := ioutil.ReadFile(pkFile)
+	// fmt.Println(dat)
+
+	// alias the keys in the context config using the username
+
+	// sync the new user to the cluster
 	if err := API.Ktrl().IsAvailable(); err != nil {
 		return err
 	}
+	// API.Ktrl().Apply(...)
 
 	return nil
 }

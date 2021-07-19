@@ -2,10 +2,16 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "util",
-    srcs = ["panic.go"],
+    srcs = [
+        "crypto.go",
+        "panic.go",
+    ],
     importpath = "github.com/proofzero/kmdr/util",
     visibility = ["//visibility:public"],
-    deps = ["@com_github_fatih_color//:color"],
+    deps = [
+        "@com_github_fatih_color//:color",
+        "@org_golang_x_crypto//nacl/box",
+    ],
 )
 
 go_test(

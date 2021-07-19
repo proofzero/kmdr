@@ -16,12 +16,17 @@ limitations under the License.
 package api
 
 import (
+	"embed"
+
 	"cuelang.org/go/cue/cuecontext"
 )
 
 // this api is used multuple times during an execution
 // so we create a singleton
-var kmdrapi *kmdrAPI
+var (
+	kmdrapi  *kmdrAPI
+	StaticFS embed.FS
+)
 
 // NewAPI creates a instance of KmdrAPI
 func NewAPI() KmdrAPI {
@@ -29,6 +34,11 @@ func NewAPI() KmdrAPI {
 		return *kmdrapi
 	}
 
+	// buildOption := cue.ImportPath(StaticFS)
+	// api.context.NewInstance()
+	// fs := os.DirFS(staticData)
+
+	// api.context.BuildInstance(api.context.BuildInstance())
 	cueContext := cuecontext.New()
 	cue := cueAPI{
 		context: cueContext,
