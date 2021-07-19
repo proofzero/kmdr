@@ -75,6 +75,7 @@ func setupCmdRun(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	// write the keypair out to users config directory
+	// TODO: move to util or API
 	home, _ := homedir.Dir()
 	pkFile := fmt.Sprintf("%s/.config/kubelt/keys/%s.pub", home, username)
 	skFile := fmt.Sprintf("%s/.config/kubelt/keys/%s", home, username)
