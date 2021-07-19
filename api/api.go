@@ -17,8 +17,12 @@ package api
 
 import (
 	"embed"
+	"io/fs"
+	"io/ioutil"
+	"strings"
 
 	"cuelang.org/go/cue/cuecontext"
+	"cuelang.org/go/cue/load"
 )
 
 // this api is used multuple times during an execution
@@ -34,14 +38,33 @@ func NewAPI() KmdrAPI {
 		return *kmdrapi
 	}
 
-	// buildOption := cue.ImportPath(StaticFS)
-	// api.context.NewInstance()
-	// fs := os.DirFS(staticData)
+	config := load.Config{
+		Overlay: make(map[string]load.Source),
+	}
+	fs.WalkDir(StaticFS, ".", func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if strings.Contains(path, ".cue") {
+			f, err := ioutil.ReadFile(path)
+			config.Overlay[path] = load.FromString(string(f))
+			return err
+		}
+		if d != nil {
+			return nil
+		}
+		return err
+	})
+	instances := load.Instances([]string{"kmdr"}, &config)
 
-	// api.context.BuildInstance(api.context.BuildInstance())
 	cueContext := cuecontext.New()
+
+	// kmdrInstance := instances[0]
+	// instance := cueContext.BuildInstance(kmdrInstance)
+
 	cue := cueAPI{
-		context: cueContext,
+		context:   cueContext,
+		instances: instances,
 	}
 	cue.schemaFetcher = cue.fetchSchema
 

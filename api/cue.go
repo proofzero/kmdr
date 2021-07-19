@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	"cuelang.org/go/cue"
+	"cuelang.org/go/cue/build"
 	"github.com/mitchellh/go-homedir"
 	"github.com/proofzero/kmdr/util"
 )
@@ -55,6 +56,7 @@ type CueAPI interface {
 // cueAPI
 type cueAPI struct {
 	context         *cue.Context
+	instances       []*build.Instance
 	schemasVersions *map[string]cue.Value // singleton for faster processing during "apply"
 	schemaFetcher   func(apiVersion string) ([]byte, error)
 }
