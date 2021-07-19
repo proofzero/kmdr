@@ -1,0 +1,14 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "gocodec",
+    srcs = ["codec.go"],
+    importmap = "github.com/proofzero/kmdr/vendor/cuelang.org/go/encoding/gocode/gocodec",
+    importpath = "cuelang.org/go/encoding/gocode/gocodec",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/cuelang.org/go/cue",
+        "//vendor/cuelang.org/go/cue/cuecontext",
+        "//vendor/cuelang.org/go/internal/value",
+    ],
+)

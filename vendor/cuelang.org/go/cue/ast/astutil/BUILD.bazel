@@ -1,0 +1,21 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "astutil",
+    srcs = [
+        "apply.go",
+        "file.go",
+        "resolve.go",
+        "sanitize.go",
+        "util.go",
+        "walk.go",
+    ],
+    importmap = "github.com/proofzero/kmdr/vendor/cuelang.org/go/cue/ast/astutil",
+    importpath = "cuelang.org/go/cue/ast/astutil",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/cuelang.org/go/cue/ast",
+        "//vendor/cuelang.org/go/cue/errors",
+        "//vendor/cuelang.org/go/cue/token",
+    ],
+)

@@ -1,0 +1,16 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "cli",
+    srcs = ["cli.go"],
+    importmap = "github.com/proofzero/kmdr/vendor/cuelang.org/go/internal/cli",
+    importpath = "cuelang.org/go/internal/cli",
+    visibility = ["//vendor/cuelang.org/go:__subpackages__"],
+    deps = [
+        "//vendor/cuelang.org/go/cue",
+        "//vendor/cuelang.org/go/cue/ast",
+        "//vendor/cuelang.org/go/cue/errors",
+        "//vendor/cuelang.org/go/cue/parser",
+        "//vendor/cuelang.org/go/cue/token",
+    ],
+)

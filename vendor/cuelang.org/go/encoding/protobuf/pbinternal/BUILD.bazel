@@ -1,0 +1,17 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "pbinternal",
+    srcs = [
+        "attribute.go",
+        "symbol.go",
+    ],
+    importmap = "github.com/proofzero/kmdr/vendor/cuelang.org/go/encoding/protobuf/pbinternal",
+    importpath = "cuelang.org/go/encoding/protobuf/pbinternal",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/cuelang.org/go/cue",
+        "//vendor/cuelang.org/go/cue/ast",
+        "//vendor/cuelang.org/go/cue/token",
+    ],
+)

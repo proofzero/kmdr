@@ -24,7 +24,10 @@ go_library(
     srcs = ["main.go"],
     importpath = "github.com/proofzero/kmdr",
     visibility = ["//visibility:private"],
-    deps = ["//cmd"],
+    deps = [
+        "//api",
+        "//cmd",
+    ],
 )
 
 # TODO: add version numbers for genrules

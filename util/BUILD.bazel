@@ -9,8 +9,8 @@ go_library(
     importpath = "github.com/proofzero/kmdr/util",
     visibility = ["//visibility:public"],
     deps = [
-        "@com_github_fatih_color//:color",
-        "@org_golang_x_crypto//nacl/box",
+        "//vendor/github.com/fatih/color",
+        "//vendor/golang.org/x/crypto/nacl/box",
     ],
 )
 

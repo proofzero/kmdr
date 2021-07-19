@@ -1,0 +1,19 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "file",
+    srcs = [
+        "doc.go",
+        "file.go",
+        "pkg.go",
+    ],
+    importmap = "github.com/proofzero/kmdr/vendor/cuelang.org/go/pkg/tool/file",
+    importpath = "cuelang.org/go/pkg/tool/file",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/cuelang.org/go/cue",
+        "//vendor/cuelang.org/go/internal/core/adt",
+        "//vendor/cuelang.org/go/internal/task",
+        "//vendor/cuelang.org/go/pkg/internal",
+    ],
+)

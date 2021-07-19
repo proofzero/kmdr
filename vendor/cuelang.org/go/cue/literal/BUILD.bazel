@@ -1,0 +1,20 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "literal",
+    srcs = [
+        "doc.go",
+        "indent.go",
+        "num.go",
+        "quote.go",
+        "string.go",
+    ],
+    importmap = "github.com/proofzero/kmdr/vendor/cuelang.org/go/cue/literal",
+    importpath = "cuelang.org/go/cue/literal",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/cuelang.org/go/cue/errors",
+        "//vendor/cuelang.org/go/cue/token",
+        "//vendor/github.com/cockroachdb/apd/v2:apd",
+    ],
+)

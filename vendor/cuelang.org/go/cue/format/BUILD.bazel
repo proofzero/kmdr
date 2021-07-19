@@ -1,0 +1,25 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "format",
+    srcs = [
+        "format.go",
+        "import.go",
+        "node.go",
+        "printer.go",
+        "simplify.go",
+    ],
+    importmap = "github.com/proofzero/kmdr/vendor/cuelang.org/go/cue/format",
+    importpath = "cuelang.org/go/cue/format",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/cuelang.org/go/cue/ast",
+        "//vendor/cuelang.org/go/cue/ast/astutil",
+        "//vendor/cuelang.org/go/cue/errors",
+        "//vendor/cuelang.org/go/cue/literal",
+        "//vendor/cuelang.org/go/cue/parser",
+        "//vendor/cuelang.org/go/cue/scanner",
+        "//vendor/cuelang.org/go/cue/token",
+        "//vendor/cuelang.org/go/internal",
+    ],
+)

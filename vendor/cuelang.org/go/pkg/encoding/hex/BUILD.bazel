@@ -1,0 +1,17 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "hex",
+    srcs = [
+        "hex.go",
+        "manual.go",
+        "pkg.go",
+    ],
+    importmap = "github.com/proofzero/kmdr/vendor/cuelang.org/go/pkg/encoding/hex",
+    importpath = "cuelang.org/go/pkg/encoding/hex",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/cuelang.org/go/internal/core/adt",
+        "//vendor/cuelang.org/go/pkg/internal",
+    ],
+)

@@ -1,0 +1,19 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "ast",
+    srcs = [
+        "ast.go",
+        "comments.go",
+        "ident.go",
+        "walk.go",
+    ],
+    importmap = "github.com/proofzero/kmdr/vendor/cuelang.org/go/cue/ast",
+    importpath = "cuelang.org/go/cue/ast",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/cuelang.org/go/cue/errors",
+        "//vendor/cuelang.org/go/cue/literal",
+        "//vendor/cuelang.org/go/cue/token",
+    ],
+)

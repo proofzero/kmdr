@@ -1,0 +1,13 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "types",
+    srcs = ["value.go"],
+    importmap = "github.com/proofzero/kmdr/vendor/cuelang.org/go/internal/types",
+    importpath = "cuelang.org/go/internal/types",
+    visibility = ["//vendor/cuelang.org/go:__subpackages__"],
+    deps = [
+        "//vendor/cuelang.org/go/internal/core/adt",
+        "//vendor/cuelang.org/go/internal/core/runtime",
+    ],
+)

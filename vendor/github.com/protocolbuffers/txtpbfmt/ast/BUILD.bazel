@@ -1,0 +1,9 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "ast",
+    srcs = ["ast.go"],
+    importmap = "github.com/proofzero/kmdr/vendor/github.com/protocolbuffers/txtpbfmt/ast",
+    importpath = "github.com/protocolbuffers/txtpbfmt/ast",
+    visibility = ["//visibility:public"],
+)

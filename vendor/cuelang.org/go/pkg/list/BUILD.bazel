@@ -1,0 +1,21 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "list",
+    srcs = [
+        "list.go",
+        "math.go",
+        "pkg.go",
+        "sort.go",
+    ],
+    importmap = "github.com/proofzero/kmdr/vendor/cuelang.org/go/pkg/list",
+    importpath = "cuelang.org/go/pkg/list",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/cuelang.org/go/cue",
+        "//vendor/cuelang.org/go/internal",
+        "//vendor/cuelang.org/go/internal/core/adt",
+        "//vendor/cuelang.org/go/pkg/internal",
+        "//vendor/github.com/cockroachdb/apd/v2:apd",
+    ],
+)

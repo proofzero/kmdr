@@ -41,7 +41,7 @@ func NewAPI() KmdrAPI {
 	config := load.Config{
 		Overlay: make(map[string]load.Source),
 	}
-	fs.WalkDir(StaticFS, ".", func(path string, d fs.DirEntry, err error) error {
+	fs.WalkDir(StaticFS, "cue", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
@@ -58,9 +58,6 @@ func NewAPI() KmdrAPI {
 	instances := load.Instances([]string{"kmdr"}, &config)
 
 	cueContext := cuecontext.New()
-
-	// kmdrInstance := instances[0]
-	// instance := cueContext.BuildInstance(kmdrInstance)
 
 	cue := cueAPI{
 		context:   cueContext,

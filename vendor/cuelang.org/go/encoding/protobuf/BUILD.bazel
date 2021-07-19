@@ -1,0 +1,31 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "protobuf",
+    srcs = [
+        "errors.go",
+        "parse.go",
+        "protobuf.go",
+        "types.go",
+        "util.go",
+    ],
+    importmap = "github.com/proofzero/kmdr/vendor/cuelang.org/go/encoding/protobuf",
+    importpath = "cuelang.org/go/encoding/protobuf",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/cuelang.org/go/cue/ast",
+        "//vendor/cuelang.org/go/cue/ast/astutil",
+        "//vendor/cuelang.org/go/cue/build",
+        "//vendor/cuelang.org/go/cue/errors",
+        "//vendor/cuelang.org/go/cue/format",
+        "//vendor/cuelang.org/go/cue/literal",
+        "//vendor/cuelang.org/go/cue/parser",
+        "//vendor/cuelang.org/go/cue/token",
+        "//vendor/cuelang.org/go/internal",
+        "//vendor/cuelang.org/go/internal/source",
+        "//vendor/cuelang.org/go/pkg",
+        "//vendor/github.com/emicklei/proto",
+        "//vendor/github.com/mpvl/unique",
+        "//vendor/golang.org/x/xerrors",
+    ],
+)

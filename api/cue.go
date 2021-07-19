@@ -61,6 +61,12 @@ type cueAPI struct {
 	schemaFetcher   func(apiVersion string) ([]byte, error)
 }
 
+func (api cueAPI) unifyKmdrModule(input cue.Value) cue.Value {
+	kmdrInstance := api.instances[0]
+	instance := api.context.BuildInstance(kmdrInstance)
+	return instance.Unify(input)
+}
+
 // CompileShemaFromString accepts a string containg cue then builds and returns a  cue.Value
 func (api cueAPI) CompileSchemaFromString(apply string) (cue.Value, error) {
 	applySchemas := api.context.CompileString(apply)

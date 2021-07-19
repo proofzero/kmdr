@@ -1,0 +1,20 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "subsume",
+    srcs = [
+        "structural.go",
+        "subsume.go",
+        "value.go",
+        "vertex.go",
+    ],
+    importmap = "github.com/proofzero/kmdr/vendor/cuelang.org/go/internal/core/subsume",
+    importpath = "cuelang.org/go/internal/core/subsume",
+    visibility = ["//vendor/cuelang.org/go:__subpackages__"],
+    deps = [
+        "//vendor/cuelang.org/go/cue/errors",
+        "//vendor/cuelang.org/go/internal",
+        "//vendor/cuelang.org/go/internal/core/adt",
+        "//vendor/cuelang.org/go/internal/core/export",
+    ],
+)

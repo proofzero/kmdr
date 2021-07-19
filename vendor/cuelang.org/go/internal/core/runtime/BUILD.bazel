@@ -1,0 +1,27 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "runtime",
+    srcs = [
+        "build.go",
+        "errors.go",
+        "go.go",
+        "imports.go",
+        "index.go",
+        "resolve.go",
+        "runtime.go",
+    ],
+    importmap = "github.com/proofzero/kmdr/vendor/cuelang.org/go/internal/core/runtime",
+    importpath = "cuelang.org/go/internal/core/runtime",
+    visibility = ["//vendor/cuelang.org/go:__subpackages__"],
+    deps = [
+        "//vendor/cuelang.org/go/cue/ast",
+        "//vendor/cuelang.org/go/cue/ast/astutil",
+        "//vendor/cuelang.org/go/cue/build",
+        "//vendor/cuelang.org/go/cue/errors",
+        "//vendor/cuelang.org/go/cue/token",
+        "//vendor/cuelang.org/go/internal",
+        "//vendor/cuelang.org/go/internal/core/adt",
+        "//vendor/cuelang.org/go/internal/core/compile",
+    ],
+)

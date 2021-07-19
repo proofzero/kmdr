@@ -1,0 +1,35 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "encoding",
+    srcs = [
+        "detect.go",
+        "encoder.go",
+        "encoding.go",
+    ],
+    importmap = "github.com/proofzero/kmdr/vendor/cuelang.org/go/internal/encoding",
+    importpath = "cuelang.org/go/internal/encoding",
+    visibility = ["//vendor/cuelang.org/go:__subpackages__"],
+    deps = [
+        "//vendor/cuelang.org/go/cue",
+        "//vendor/cuelang.org/go/cue/ast",
+        "//vendor/cuelang.org/go/cue/build",
+        "//vendor/cuelang.org/go/cue/errors",
+        "//vendor/cuelang.org/go/cue/format",
+        "//vendor/cuelang.org/go/cue/literal",
+        "//vendor/cuelang.org/go/cue/parser",
+        "//vendor/cuelang.org/go/cue/token",
+        "//vendor/cuelang.org/go/encoding/json",
+        "//vendor/cuelang.org/go/encoding/jsonschema",
+        "//vendor/cuelang.org/go/encoding/openapi",
+        "//vendor/cuelang.org/go/encoding/protobuf",
+        "//vendor/cuelang.org/go/encoding/protobuf/jsonpb",
+        "//vendor/cuelang.org/go/encoding/protobuf/textproto",
+        "//vendor/cuelang.org/go/internal",
+        "//vendor/cuelang.org/go/internal/filetypes",
+        "//vendor/cuelang.org/go/internal/third_party/yaml",
+        "//vendor/cuelang.org/go/pkg/encoding/yaml",
+        "//vendor/golang.org/x/text/encoding/unicode",
+        "//vendor/golang.org/x/text/transform",
+    ],
+)

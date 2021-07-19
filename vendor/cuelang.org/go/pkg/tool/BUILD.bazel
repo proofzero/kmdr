@@ -1,0 +1,12 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "tool",
+    srcs = [
+        "doc.go",
+        "generate.go",
+    ],
+    importmap = "github.com/proofzero/kmdr/vendor/cuelang.org/go/pkg/tool",
+    importpath = "cuelang.org/go/pkg/tool",
+    visibility = ["//visibility:public"],
+)

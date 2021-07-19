@@ -1,0 +1,16 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "sha1",
+    srcs = [
+        "pkg.go",
+        "sha1.go",
+    ],
+    importmap = "github.com/proofzero/kmdr/vendor/cuelang.org/go/pkg/crypto/sha1",
+    importpath = "cuelang.org/go/pkg/crypto/sha1",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/cuelang.org/go/internal/core/adt",
+        "//vendor/cuelang.org/go/pkg/internal",
+    ],
+)

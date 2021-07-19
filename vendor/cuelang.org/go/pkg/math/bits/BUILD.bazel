@@ -1,0 +1,16 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "bits",
+    srcs = [
+        "manual.go",
+        "pkg.go",
+    ],
+    importmap = "github.com/proofzero/kmdr/vendor/cuelang.org/go/pkg/math/bits",
+    importpath = "cuelang.org/go/pkg/math/bits",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/cuelang.org/go/internal/core/adt",
+        "//vendor/cuelang.org/go/pkg/internal",
+    ],
+)

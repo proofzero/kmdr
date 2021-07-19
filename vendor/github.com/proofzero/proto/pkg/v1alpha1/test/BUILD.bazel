@@ -1,0 +1,14 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "test",
+    srcs = ["kubelt_grpc_mocks.go"],
+    importmap = "github.com/proofzero/kmdr/vendor/github.com/proofzero/proto/pkg/v1alpha1/test",
+    importpath = "github.com/proofzero/proto/pkg/v1alpha1/test",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/golang/mock/gomock",
+        "//vendor/github.com/proofzero/proto/pkg/v1alpha1",
+        "//vendor/google.golang.org/grpc",
+    ],
+)

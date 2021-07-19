@@ -1,0 +1,13 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "dep",
+    srcs = [
+        "dep.go",
+        "mixed.go",
+    ],
+    importmap = "github.com/proofzero/kmdr/vendor/cuelang.org/go/internal/core/dep",
+    importpath = "cuelang.org/go/internal/core/dep",
+    visibility = ["//vendor/cuelang.org/go:__subpackages__"],
+    deps = ["//vendor/cuelang.org/go/internal/core/adt"],
+)

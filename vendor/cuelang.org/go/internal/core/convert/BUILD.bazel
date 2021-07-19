@@ -1,0 +1,21 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "convert",
+    srcs = ["go.go"],
+    importmap = "github.com/proofzero/kmdr/vendor/cuelang.org/go/internal/core/convert",
+    importpath = "cuelang.org/go/internal/core/convert",
+    visibility = ["//vendor/cuelang.org/go:__subpackages__"],
+    deps = [
+        "//vendor/cuelang.org/go/cue/ast",
+        "//vendor/cuelang.org/go/cue/ast/astutil",
+        "//vendor/cuelang.org/go/cue/errors",
+        "//vendor/cuelang.org/go/cue/parser",
+        "//vendor/cuelang.org/go/cue/token",
+        "//vendor/cuelang.org/go/internal/core/adt",
+        "//vendor/cuelang.org/go/internal/core/compile",
+        "//vendor/cuelang.org/go/internal/types",
+        "//vendor/github.com/cockroachdb/apd/v2:apd",
+        "//vendor/golang.org/x/text/encoding/unicode",
+    ],
+)

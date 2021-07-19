@@ -1,0 +1,18 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "debug",
+    srcs = [
+        "compact.go",
+        "debug.go",
+    ],
+    importmap = "github.com/proofzero/kmdr/vendor/cuelang.org/go/internal/core/debug",
+    importpath = "cuelang.org/go/internal/core/debug",
+    visibility = ["//vendor/cuelang.org/go:__subpackages__"],
+    deps = [
+        "//vendor/cuelang.org/go/cue/errors",
+        "//vendor/cuelang.org/go/cue/literal",
+        "//vendor/cuelang.org/go/internal",
+        "//vendor/cuelang.org/go/internal/core/adt",
+    ],
+)
