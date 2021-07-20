@@ -40,7 +40,7 @@ func (c configAPI) InitConfig() error {
 	return nil
 }
 
-// AddContext adds a context to the config
+// AddContext adds a context t o the config
 func (c configAPI) AddContext(context string, isDefault ...bool) error {
 	return nil
 }
