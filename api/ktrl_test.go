@@ -80,7 +80,8 @@ func TestKtrlClient_Apply(t *testing.T) {
 				gomock.Any(),
 			).Return(&kb.ApplyDefault{}, nil)
 
-			schema, _ := NewAPI().Cue().CompileSchemaFromString(validCue)
+			API, _ := NewAPI()
+			schema, _ := API.Cue().CompileSchemaFromString(validCue)
 			val := schema.LookupPath(cue.ParsePath("foo"))
 			got, err := k.Apply(val)
 			if (err != nil) != tt.wantErr {

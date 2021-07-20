@@ -60,7 +60,7 @@ func NewSetupCmd() *cobra.Command {
 
 	cmd.Flags().StringVarP(&username, "username", "u", "", "choose desired username")
 	cmd.Flags().StringVarP(&anon, "anonymous", "a", "", "use an auto-generated username")
-	cmd.Flags().BoolVarP(&ktrl, "init-ktrl", "k", true, "initialize an ktrl daemon if not already (default true)")
+	cmd.Flags().BoolVarP(&ktrl, "init-ktrl", "k", true, "initialize an ktrl daemon if not already")
 
 	cmd.SetHelpTemplate(setupExtraHelp)
 	return cmd
@@ -68,7 +68,10 @@ func NewSetupCmd() *cobra.Command {
 
 // setupCmdRun bootstraps the local enviroment and configurations
 func setupCmdRun(cmd *cobra.Command, args []string) error {
-	API := api.NewAPI()
+	API, err := api.NewAPI()
+	if err != nil {
+		return err
+	}
 	// generate keys for user
 	pk, sk, err := util.GenerateUserKeys()
 	if err != nil {

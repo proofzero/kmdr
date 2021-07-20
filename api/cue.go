@@ -18,11 +18,14 @@ package api
 import (
 	"errors"
 	"fmt"
+	"io/fs"
 	"io/ioutil"
+	"path/filepath"
 	"strings"
 
 	"cuelang.org/go/cue"
-	"cuelang.org/go/cue/build"
+	"cuelang.org/go/cue/cuecontext"
+	"cuelang.org/go/cue/load"
 	"github.com/mitchellh/go-homedir"
 	"github.com/proofzero/kmdr/util"
 )
@@ -56,15 +59,65 @@ type CueAPI interface {
 // cueAPI
 type cueAPI struct {
 	context         *cue.Context
-	instances       []*build.Instance
+	definitions     cue.Value
 	schemasVersions *map[string]cue.Value // singleton for faster processing during "apply"
 	schemaFetcher   func(apiVersion string) ([]byte, error)
 }
 
 func (api cueAPI) unifyKmdrModule(input cue.Value) cue.Value {
-	kmdrInstance := api.instances[0]
-	instance := api.context.BuildInstance(kmdrInstance)
-	return instance.Unify(input)
+	return api.definitions.Unify(input)
+}
+
+// NewCueAPI returns a new CueAPI
+func newCueAPI() (CueAPI, error) {
+	overlay := make(map[string]load.Source)
+	err := fs.WalkDir(StaticFS, ".", func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if d == nil || d.Type().IsDir() || !d.Type().IsRegular() {
+			return nil
+		}
+
+		if strings.Contains(path, ".cue") {
+			f, err := ioutil.ReadFile(path)
+			if err != nil {
+				return err
+			}
+			overlay[filepath.Join("/", path)] = load.FromBytes(f)
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	config := &load.Config{
+		Dir:     "/",
+		Overlay: overlay,
+	}
+	instances := load.Instances([]string{"/static/kmdr"}, config)
+
+	cueContext := cuecontext.New()
+	defs := cueContext.BuildInstance(instances[0])
+
+	mustFind := func(v cue.Value) (cue.Value, error) {
+		if err = v.Err(); err != nil {
+			return v, err
+		}
+		return v, nil
+	}
+
+	_, err = mustFind(defs.LookupPath(cue.ParsePath("#manifests")))
+	if err != nil {
+		return nil, err
+	}
+
+	cue := cueAPI{
+		context:     cueContext,
+		definitions: defs,
+	}
+	cue.schemaFetcher = cue.fetchSchema
+	return cue, nil
 }
 
 // CompileShemaFromString accepts a string containg cue then builds and returns a  cue.Value

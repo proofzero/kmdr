@@ -65,7 +65,7 @@ func applyCmdRun(cmd *cobra.Command, args []string) error {
 		applyStr = string(fBytes)
 	}
 
-	API := api.NewAPI()
+	API, _ := api.NewAPI()
 
 	validResources, err := runValidation(applyStr, API.Cue())
 	if err != nil {

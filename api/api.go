@@ -17,12 +17,6 @@ package api
 
 import (
 	"embed"
-	"io/fs"
-	"io/ioutil"
-	"strings"
-
-	"cuelang.org/go/cue/cuecontext"
-	"cuelang.org/go/cue/load"
 )
 
 // this api is used multuple times during an execution
@@ -33,57 +27,49 @@ var (
 )
 
 // NewAPI creates a instance of KmdrAPI
-func NewAPI() KmdrAPI {
+func NewAPI() (KmdrAPI, error) {
 	if kmdrapi != nil {
-		return *kmdrapi
+		return *kmdrapi, nil
 	}
 
-	config := load.Config{
-		Overlay: make(map[string]load.Source),
+	configapi, err := newConfigAPI()
+	if err != nil {
+		return nil, err
 	}
-	fs.WalkDir(StaticFS, "cue", func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-		if strings.Contains(path, ".cue") {
-			f, err := ioutil.ReadFile(path)
-			config.Overlay[path] = load.FromString(string(f))
-			return err
-		}
-		if d != nil {
-			return nil
-		}
-		return err
-	})
-	instances := load.Instances([]string{"kmdr"}, &config)
-
-	cueContext := cuecontext.New()
-
-	cue := cueAPI{
-		context:   cueContext,
-		instances: instances,
+	cueapi, err := newCueAPI()
+	if err != nil {
+		return nil, err
 	}
-	cue.schemaFetcher = cue.fetchSchema
-
-	ktrl, _ := newKtrlAPI()
+	ktrlapi, err := newKtrlAPI()
+	if err != nil {
+		return nil, err
+	}
 
 	kmdrapi = &kmdrAPI{
-		cue:  cue,
-		ktrl: ktrl,
+		config: configapi,
+		cue:    cueapi,
+		ktrl:   ktrlapi,
 	}
-	return *kmdrapi
+	return *kmdrapi, nil
 }
 
 // KmdrApi
 type KmdrAPI interface {
+	Config() ConfigAPI
 	Cue() CueAPI
 	Ktrl() KtrlAPI
 }
 
 // kmdrAPI
 type kmdrAPI struct {
-	cue  CueAPI
-	ktrl KtrlAPI
+	config ConfigAPI
+	cue    CueAPI
+	ktrl   KtrlAPI
+}
+
+// Config returns an instance of the CueAPI
+func (api kmdrAPI) Config() ConfigAPI {
+	return api.config
 }
 
 // Cue returns an instance of the CueAPI
