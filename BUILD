@@ -46,7 +46,7 @@ go_binary(
     goarch = "amd64",
     goos = "linux",
     linkmode = "pie",
-    # pure = "on",
+    pure = "off",
     # static = "on",
     visibility = ["//visibility:public"],
 )
