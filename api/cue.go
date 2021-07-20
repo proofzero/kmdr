@@ -95,7 +95,7 @@ func newCueAPI() (CueAPI, error) {
 		Dir:     "/",
 		Overlay: overlay,
 	}
-	instances := load.Instances([]string{"/static/kmdr"}, config)
+	instances := load.Instances([]string{"/static/cue/kmdr"}, config)
 
 	cueContext := cuecontext.New()
 	defs := cueContext.BuildInstance(instances[0])

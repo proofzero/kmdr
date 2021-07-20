@@ -39,7 +39,7 @@ clean:
 build:
 	$(info ******************** building binary ********************)
 	bazel run //:gazelle
-	bazel build //...
+	bazel build //... 
 
 install_local:
 	$(info ******************** installing locally ********************)

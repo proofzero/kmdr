@@ -1,6 +1,6 @@
 # ktrl/BAZEL.build
 
-load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_embed_data", "go_library")
 load("@bazel_gazelle//:def.bzl", "gazelle")
 load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
 
@@ -22,6 +22,7 @@ gazelle(name = "gazelle")
 go_library(
     name = "kmdr_lib",
     srcs = ["main.go"],
+    embedsrcs = glob(["static/**"]),
     importpath = "github.com/proofzero/kmdr",
     visibility = ["//visibility:private"],
     deps = [

@@ -7,6 +7,7 @@ go_library(
         "api_darwin.go",
         "api_linux.go",
         "api_windows.go",
+        "config.go",
         "cue.go",
         "cue_mock.go",
         "ktrl.go",
@@ -17,7 +18,6 @@ go_library(
     deps = [
         "//util",
         "//vendor/cuelang.org/go/cue",
-        "//vendor/cuelang.org/go/cue/build",
         "//vendor/cuelang.org/go/cue/cuecontext",
         "//vendor/cuelang.org/go/cue/load",
         "//vendor/github.com/adrg/xdg",
