@@ -1,0 +1,20 @@
+# config.toml
+current_user = "{{ .CurrentUser }}"
+[users]
+  {{ range $k, $v := .Users }}
+  [users.{{ $k }}]
+  name = "{{ $v.Name }}"
+  {{end}}
+
+[ktrl]
+
+  [ktrl.server]
+  protocol = "{{ or .Ktrl.Server.Protocol "tcp" }}"
+  port = "{{ or .Ktrl.Server.Port ":50051" }}"
+
+  current_context = "{{ or .Ktrl.CurrentContext "default"}}"
+  [ktrl.contexts]
+    {{ range $k, $v := .Ktrl.Contexts }}
+    [context.{{ $k }}]
+    name = "{{ $v.Name }}"
+    {{end}}

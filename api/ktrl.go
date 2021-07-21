@@ -47,7 +47,7 @@ type ktrlAPI struct {
 
 // ktrlConfig
 type ktrlConfig struct {
-	Server         serverConfig           `toml:"ktrl"`
+	Server         serverConfig           `toml:"server"`
 	CurrentContext string                 `toml:"current_context"`
 	Contexts       map[string]*kb.Context `toml:"contexts"`
 }

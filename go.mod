@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	cuelang.org/go v0.4.0
+	github.com/BurntSushi/toml v0.3.1 // indirect
 	github.com/adrg/xdg v0.3.3
 	github.com/fatih/color v1.12.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect

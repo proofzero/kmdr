@@ -15,6 +15,19 @@ limitations under the License.
 */
 package api
 
+import (
+	"errors"
+	"fmt"
+	"html/template"
+	"io/fs"
+	"io/ioutil"
+	"os"
+
+	"github.com/BurntSushi/toml"
+	"github.com/mitchellh/go-homedir"
+	kb "github.com/proofzero/proto/pkg/v1alpha1"
+)
+
 // ConfigAPI
 type ConfigAPI interface {
 	InitConfig() error
@@ -24,26 +37,53 @@ type ConfigAPI interface {
 	AddUser(user string, isDefault ...bool) error
 	RemoveUser(user string) error
 	SetDefaultUser(user string) error
+	Commit() error
 }
 
 // configAPI for managing ktrl configs
-type configAPI struct{}
+type configAPI struct {
+	CurrentUser string                       `toml:"current_user"`
+	Ktrl        ktrlConfig                   `toml:"ktrl"`
+	Users       map[string]map[string]string `toml:"users"` // TODO: User struct?
+}
 
 // NewConfigAPI returns a new ConfigAPI
 func newConfigAPI() (ConfigAPI, error) {
-	c := configAPI{}
+	c := configAPI{
+		Ktrl:  ktrlConfig{},
+		Users: make(map[string]map[string]string),
+	}
 	return c, nil
 }
 
 // initConfig bootstraps the ktrl config
 func (c configAPI) InitConfig() error {
-	// defConfig, _ := StaticFS.ReadFile("/static/templates/kmdr.toml")
-
+	home, _ := homedir.Dir()
+	configPath := fmt.Sprintf("%s/.config/kubelt/kmdr.toml", home)
+	// check if the config already exists
+	if _, err := os.Stat(configPath); !errors.Is(err, fs.ErrNotExist) {
+		// if it does, bootstrap the config struct
+		f, _ := ioutil.ReadFile(configPath)
+		if _, err := toml.Decode(string(f), &c); err != nil {
+			return err
+		}
+		fmt.Println("before")
+		fmt.Println(c)
+	}
 	return nil
 }
 
 // AddContext adds a context t o the config
 func (c configAPI) AddContext(context string, isDefault ...bool) error {
+	if c.Ktrl.Contexts == nil {
+		c.Ktrl.Contexts = make(map[string]*kb.Context)
+	}
+	// TODO: check if context already exists
+	c.Ktrl.Contexts[context] = &kb.Context{Name: context}
+	c.Ktrl.Contexts[context].Name = context
+	if len(isDefault) > 0 && isDefault[0] {
+		c.Ktrl.CurrentContext = context
+	}
 	return nil
 }
 
@@ -59,6 +99,12 @@ func (c configAPI) SetDefaultContext(context string) error {
 
 // AddUser adds a context to the config
 func (c configAPI) AddUser(user string, isDefault ...bool) error {
+	// TODO: check if user already exists
+	c.Users[user] = make(map[string]string)
+	c.Users[user]["Name"] = user
+	if len(isDefault) > 0 && isDefault[0] {
+		c.CurrentUser = user
+	}
 	return nil
 }
 
@@ -69,5 +115,24 @@ func (c configAPI) RemoveUser(user string) error {
 
 // SetDefaultUser adds a context to the config
 func (c configAPI) SetDefaultUser(user string) error {
+	return nil
+}
+
+// Commit write the config to disk
+func (c configAPI) Commit() error {
+	fmt.Println("after")
+	fmt.Println(c)
+	home, _ := homedir.Dir()
+	configPath := fmt.Sprintf("%s/.config/kubelt/kmdr.toml", home)
+	t := template.Must(template.ParseFS(StaticFS, "static/templates/kmdr.gotmpl"))
+	f, err := os.Create(configPath)
+	if err != nil {
+		return err
+	}
+
+	err = t.Execute(f, c)
+	if err != nil {
+		return err
+	}
 	return nil
 }

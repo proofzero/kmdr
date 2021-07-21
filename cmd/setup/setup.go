@@ -95,6 +95,11 @@ func setupCmdRun(cmd *cobra.Command, args []string) error {
 	// alias the keys in the context config using the username using viper
 	// configFile, _ := ioutil.ReadFile(fmt.Sprintf("%s/kmdr.cue", home))
 	// config :=
+	configAPI := API.Config()
+	configAPI.InitConfig()
+	// configAPI.AddContext("foo", true)
+	// configAPI.AddUser(username, true)
+	configAPI.Commit()
 
 	// sync the new user to the cluster
 	if err := API.Ktrl().IsAvailable(); err != nil {
