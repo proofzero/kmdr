@@ -16,7 +16,6 @@ limitations under the License.
 package api
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 
@@ -81,11 +80,7 @@ func TestKtrlClient_Apply(t *testing.T) {
 				gomock.Any(),
 			).Return(&kb.ApplyDefault{}, nil)
 
-			API, err := NewAPI()
-			if err != nil {
-				fmt.Println(API)
-				fmt.Println(err)
-			}
+			API, _ := NewAPI()
 			schema, _ := API.Cue().CompileSchemaFromString(validCue)
 			val := schema.LookupPath(cue.ParsePath("foo"))
 			got, err := k.Apply(val)

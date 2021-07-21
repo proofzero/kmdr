@@ -8,8 +8,8 @@ go_library(
     deps = [
         "//api",
         "//util",
-        "//vendor/github.com/mitchellh/go-homedir",
-        "//vendor/github.com/spf13/cobra",
+        "@com_github_mitchellh_go_homedir//:go-homedir",
+        "@com_github_spf13_cobra//:cobra",
     ],
 )
 

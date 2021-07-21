@@ -37,6 +37,8 @@ func newConfigAPI() (ConfigAPI, error) {
 
 // initConfig bootstraps the ktrl config
 func (c configAPI) InitConfig() error {
+	// defConfig, _ := StaticFS.ReadFile("/static/templates/kmdr.toml")
+
 	return nil
 }
 

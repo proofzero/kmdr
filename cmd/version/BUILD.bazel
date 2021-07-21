@@ -5,12 +5,12 @@ go_library(
     srcs = ["version.go"],
     importpath = "github.com/proofzero/kmdr/cmd/version",
     visibility = ["//visibility:public"],
-    deps = ["//vendor/github.com/spf13/cobra"],
+    deps = ["@com_github_spf13_cobra//:cobra"],
 )
 
 go_test(
     name = "version_test",
     srcs = ["version_test.go"],
     embed = [":version"],
-    deps = ["//vendor/github.com/spf13/cobra"],
+    deps = ["@com_github_spf13_cobra//:cobra"],
 )
