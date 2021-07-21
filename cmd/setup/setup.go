@@ -96,9 +96,9 @@ func setupCmdRun(cmd *cobra.Command, args []string) error {
 	// configFile, _ := ioutil.ReadFile(fmt.Sprintf("%s/kmdr.cue", home))
 	// config :=
 	configAPI := API.Config()
-	configAPI.InitConfig()
-	// configAPI.AddContext("foo", true)
-	// configAPI.AddUser(username, true)
+	configAPI, _ = configAPI.InitConfig()
+	configAPI, _ = configAPI.AddContext("foo", true)
+	configAPI, _ = configAPI.AddUser(username, true)
 	configAPI.Commit()
 
 	// sync the new user to the cluster

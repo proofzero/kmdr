@@ -30,13 +30,13 @@ import (
 
 // ConfigAPI
 type ConfigAPI interface {
-	InitConfig() error
-	AddContext(context string, isDefault ...bool) error
-	RemoveContext(context string) error
-	SetDefaultContext(context string) error
-	AddUser(user string, isDefault ...bool) error
-	RemoveUser(user string) error
-	SetDefaultUser(user string) error
+	InitConfig() (ConfigAPI, error)
+	AddContext(context string, isDefault ...bool) (ConfigAPI, error)
+	RemoveContext(context string) (ConfigAPI, error)
+	SetDefaultContext(context string) (ConfigAPI, error)
+	AddUser(user string, isDefault ...bool) (ConfigAPI, error)
+	RemoveUser(user string) (ConfigAPI, error)
+	SetDefaultUser(user string) (ConfigAPI, error)
 	Commit() error
 }
 
@@ -49,7 +49,7 @@ type configAPI struct {
 
 // NewConfigAPI returns a new ConfigAPI
 func newConfigAPI() (ConfigAPI, error) {
-	c := configAPI{
+	c := &configAPI{
 		Ktrl:  ktrlConfig{},
 		Users: make(map[string]map[string]string),
 	}
@@ -57,7 +57,7 @@ func newConfigAPI() (ConfigAPI, error) {
 }
 
 // initConfig bootstraps the ktrl config
-func (c configAPI) InitConfig() error {
+func (c configAPI) InitConfig() (ConfigAPI, error) {
 	home, _ := homedir.Dir()
 	configPath := fmt.Sprintf("%s/.config/kubelt/kmdr.toml", home)
 	// check if the config already exists
@@ -65,16 +65,16 @@ func (c configAPI) InitConfig() error {
 		// if it does, bootstrap the config struct
 		f, _ := ioutil.ReadFile(configPath)
 		if _, err := toml.Decode(string(f), &c); err != nil {
-			return err
+			return c, err
 		}
 		fmt.Println("before")
 		fmt.Println(c)
 	}
-	return nil
+	return c, nil
 }
 
 // AddContext adds a context t o the config
-func (c configAPI) AddContext(context string, isDefault ...bool) error {
+func (c configAPI) AddContext(context string, isDefault ...bool) (ConfigAPI, error) {
 	if c.Ktrl.Contexts == nil {
 		c.Ktrl.Contexts = make(map[string]*kb.Context)
 	}
@@ -84,38 +84,38 @@ func (c configAPI) AddContext(context string, isDefault ...bool) error {
 	if len(isDefault) > 0 && isDefault[0] {
 		c.Ktrl.CurrentContext = context
 	}
-	return nil
+	return c, nil
 }
 
 // RemoveContext adds a context to the config
-func (c configAPI) RemoveContext(context string) error {
-	return nil
+func (c configAPI) RemoveContext(context string) (ConfigAPI, error) {
+	return c, nil
 }
 
 // SetDefaultContext adds a context to the config
-func (c configAPI) SetDefaultContext(context string) error {
-	return nil
+func (c configAPI) SetDefaultContext(context string) (ConfigAPI, error) {
+	return c, nil
 }
 
 // AddUser adds a context to the config
-func (c configAPI) AddUser(user string, isDefault ...bool) error {
+func (c configAPI) AddUser(user string, isDefault ...bool) (ConfigAPI, error) {
 	// TODO: check if user already exists
 	c.Users[user] = make(map[string]string)
 	c.Users[user]["Name"] = user
 	if len(isDefault) > 0 && isDefault[0] {
 		c.CurrentUser = user
 	}
-	return nil
+	return c, nil
 }
 
 // RemoveUser adds a context to the config
-func (c configAPI) RemoveUser(user string) error {
-	return nil
+func (c configAPI) RemoveUser(user string) (ConfigAPI, error) {
+	return c, nil
 }
 
 // SetDefaultUser adds a context to the config
-func (c configAPI) SetDefaultUser(user string) error {
-	return nil
+func (c configAPI) SetDefaultUser(user string) (ConfigAPI, error) {
+	return c, nil
 }
 
 // Commit write the config to disk
