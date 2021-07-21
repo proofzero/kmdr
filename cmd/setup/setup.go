@@ -103,7 +103,15 @@ func setupCmdRun(cmd *cobra.Command, args []string) error {
 	}
 
 	// Create the user
-	// API.Ktrl().Apply(...)
+	cueAPI := API.Cue()
+	user := make(map[string]string)
+	user["data.name"] = username
+	userVal, err := cueAPI.GenerateCueSpec("user", user)
+	if err != nil {
+		// TODO: return err format
+	}
+
+	API.Ktrl().Apply(userVal)
 
 	return nil
 }

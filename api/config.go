@@ -70,8 +70,6 @@ func (c *configAPI) InitConfig() error {
 		if _, err := toml.Decode(string(f), &c); err != nil {
 			return err
 		}
-		fmt.Println("before")
-		fmt.Println(c)
 	}
 	return nil
 }

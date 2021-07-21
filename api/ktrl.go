@@ -153,7 +153,6 @@ func (ktrl ktrlAPI) IsAvailable() error {
 func (ktrl ktrlAPI) Apply(cueValue cue.Value) (*kb.ApplyDefault, error) {
 	ctx := ktrl.Config.Contexts[ktrl.Config.CurrentContext]
 	cueString := fmt.Sprint(cueValue)
-	fmt.Println(cueString)
 	resource := &kb.Cue{
 		Cue: cueString,
 	}

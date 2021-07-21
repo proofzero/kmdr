@@ -51,7 +51,7 @@ var (
 type CueAPI interface {
 	CompileSchemaFromString(apply string) (cue.Value, error)
 	FetchSchema(apiVersion string) (cue.Value, error)
-	GenerateCueSpec(schema string, properties map[string]string, val cue.Value) (cue.Value, error)
+	GenerateCueSpec(schema string, properties map[string]string) (cue.Value, error)
 	ValidateResource(val cue.Value, def cue.Value) error
 	fetchSchema(apiVersion string) ([]byte, error)
 }
@@ -152,10 +152,10 @@ func (api cueAPI) ValidateResource(val cue.Value, def cue.Value) error {
 }
 
 // GenerateCueSpec injects concrete values and into cue value and validates the results before returning the concrete cue value.
-func (api cueAPI) GenerateCueSpec(schema string, properties map[string]string, val cue.Value) (cue.Value, error) {
+func (api cueAPI) GenerateCueSpec(schema string, properties map[string]string) (cue.Value, error) {
 	// lookup the schema type from all the available schemas in the cue.Instance
 	// nolint:staticcheck
-	specSchema := val.LookupDef(schema)
+	specSchema := api.definitions.LookupPath(cue.ParsePath(fmt.Sprintf("#%s", schema)))
 	if !specSchema.Exists() {
 		return cue.Value{}, fmt.Errorf("%s is not a valid schema", schema)
 	}
