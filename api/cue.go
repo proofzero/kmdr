@@ -26,8 +26,6 @@ import (
 	"cuelang.org/go/cue"
 	"cuelang.org/go/cue/cuecontext"
 	"cuelang.org/go/cue/load"
-	"github.com/mitchellh/go-homedir"
-	"github.com/proofzero/kmdr/util"
 )
 
 var (
@@ -50,10 +48,8 @@ var (
 // CueAPI
 type CueAPI interface {
 	CompileSchemaFromString(apply string) (cue.Value, error)
-	FetchSchema(apiVersion string) (cue.Value, error)
 	GenerateCueSpec(schema string, properties map[string]string) (cue.Value, error)
-	ValidateResource(val cue.Value, def cue.Value) error
-	fetchSchema(apiVersion string) ([]byte, error)
+	ValidateResource(def string, val cue.Value) (cue.Value, error)
 }
 
 // cueAPI
@@ -111,7 +107,6 @@ func newCueAPI() (CueAPI, error) {
 		context:     cueContext,
 		definitions: defs,
 	}
-	c.schemaFetcher = c.fetchSchema
 
 	_, err = mustFind(defs.LookupPath(cue.ParsePath("#manifests")))
 	if err != nil {
@@ -124,38 +119,27 @@ func newCueAPI() (CueAPI, error) {
 func (api cueAPI) CompileSchemaFromString(apply string) (cue.Value, error) {
 	applySchemas := api.context.CompileString(apply)
 	if applySchemas.Err() != nil {
-		p := util.HelpPanic{
-			Reason: noSchemasErr,
-		}
-		display, err := p.Display()
-		if err != nil {
-			return applySchemas, err
-		}
-		return applySchemas, errors.New(display)
+		return applySchemas, errors.New(noSchemasErr)
 	}
 	return applySchemas, nil
 }
 
 // ValidateResource accepts a cue value and validates it against a cue definition
 // for the "kind" of the cue value
-func (api cueAPI) ValidateResource(val cue.Value, def cue.Value) error {
+func (api cueAPI) ValidateResource(def string, val cue.Value) (cue.Value, error) {
 	pre := val.Eval()
-	val = val.Unify(def)
+	definition := api.definitions.LookupPath(cue.ParsePath(def))
+	val = val.Unify(definition)
 	if err := val.Validate(); err != nil {
-		p := &util.HelpPanic{
-			Reason: validationErr,
-		}
-		display, _ := p.Display(val, pre)
-		return errors.New(display)
+		return pre, errors.New(validationErr)
 	}
-	return nil
+	return val, nil
 }
 
 // GenerateCueSpec injects concrete values and into cue value and validates the results before returning the concrete cue value.
 func (api cueAPI) GenerateCueSpec(schema string, properties map[string]string) (cue.Value, error) {
 	// lookup the schema type from all the available schemas in the cue.Instance
-	// nolint:staticcheck
-	specSchema := api.definitions.LookupPath(cue.ParsePath(fmt.Sprintf("#%s", schema)))
+	specSchema := api.definitions.LookupPath(cue.ParsePath(schema))
 	if !specSchema.Exists() {
 		return cue.Value{}, fmt.Errorf("%s is not a valid schema", schema)
 	}
@@ -168,31 +152,4 @@ func (api cueAPI) GenerateCueSpec(schema string, properties map[string]string) (
 
 	// return and validate the schema
 	return specSchema, specSchema.Validate()
-}
-
-// FetchSchema fetches the apiVersion definitions and compiles the definitions to a cue value
-func (api cueAPI) FetchSchema(apiVersion string) (cue.Value, error) {
-	if api.schemasVersions == nil {
-		schemas := make(map[string]cue.Value)
-		api.schemasVersions = &schemas
-	}
-	if schema, ok := (*api.schemasVersions)[apiVersion]; ok {
-		return schema, nil
-	}
-	schemaBuf, _ := api.schemaFetcher(apiVersion)
-	val, err := api.CompileSchemaFromString(string(schemaBuf))
-	if err != nil {
-		return val, err
-	}
-	(*api.schemasVersions)[apiVersion] = val
-	return val, nil
-}
-
-// fetchSchema is a placeholder for fetching schema definitions.
-// Currently this function goes to disk to lookup values but will request the schemas from ktrl
-func (api cueAPI) fetchSchema(apiVersion string) ([]byte, error) {
-	home, _ := homedir.Dir()
-	versionSplit := strings.Split(apiVersion, "/")
-	// TODO: error handle
-	return ioutil.ReadFile(fmt.Sprintf("%s/.config/kubelt/definitions/%s.cue", home, versionSplit[len(versionSplit)-1])) // TODO: move to IPFS
 }

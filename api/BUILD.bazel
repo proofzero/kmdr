@@ -16,8 +16,8 @@ go_library(
     importpath = "github.com/proofzero/kmdr/api",
     visibility = ["//visibility:public"],
     deps = [
-        "//util",
         "@com_github_adrg_xdg//:xdg",
+        "@com_github_burntsushi_toml//:toml",
         "@com_github_golang_mock//gomock",
         "@com_github_mitchellh_go_homedir//:go-homedir",
         "@com_github_proofzero_proto//pkg/v1alpha1",

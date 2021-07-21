@@ -44,20 +44,6 @@ manifests: {
 }
 `
 
-const validDefinition string = `
-#manifests: [_=string]: {
-    apiVersion: string
-    kind: string
-	metadata: {
-		name: string
-		[_]: _
-	}
-	data?: {
-		[_]: _
-	}
-}
-`
-
 func Test_runValidation(t *testing.T) {
 	type args struct {
 		applyStr string
@@ -88,15 +74,13 @@ func Test_runValidation(t *testing.T) {
 			defer ctrl.Finish()
 
 			context := cuecontext.New()
-			d := context.CompileString(validDefinition)
 			v := context.CompileString(tt.args.applyStr)
 			m := api.NewMockCueAPI(ctrl)
 			m.EXPECT().CompileSchemaFromString(tt.args.applyStr).Return(v, nil).AnyTimes()
 			if tt.wantErr {
-				m.EXPECT().FetchSchema(gomock.Any()).Return(cue.Value{}, fmt.Errorf("bad")).AnyTimes()
-				m.EXPECT().ValidateResource(gomock.Any(), gomock.Any()).Return(fmt.Errorf("invalid")).AnyTimes()
+				// type(cue.Value{})
+				m.EXPECT().ValidateResource(gomock.Any(), gomock.Any()).Return(interface{}(cue.Value{}), fmt.Errorf("invalid")).AnyTimes()
 			} else {
-				m.EXPECT().FetchSchema("kubelt://kmdr").Return(d, nil).AnyTimes()
 				m.EXPECT().ValidateResource(gomock.Any(), gomock.Any()).AnyTimes()
 			}
 

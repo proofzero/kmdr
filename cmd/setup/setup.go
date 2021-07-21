@@ -87,31 +87,51 @@ func setupCmdRun(cmd *cobra.Command, args []string) error {
 	_ = ioutil.WriteFile(pkFile, pk[:], 0644)
 	_ = ioutil.WriteFile(skFile, sk[:], 0644)
 	if err != nil {
-		return err
+		p := &util.HelpPanic{
+			Reason: err.Error(),
+		}
+		display, _ := p.Display()
+		return errors.New(display)
 	}
 
-	// alias the keys in the context config using the username using viper
+	// create/update the config
+	// TODO: handle errors
 	configAPI := API.Config()
-	configAPI.InitConfig()
-	configAPI.AddContext("default", true)
-	configAPI.AddUser(username, true)
-	configAPI.Commit()
+	_ = configAPI.InitConfig()
+	_ = configAPI.AddContext("default", true)
+	_ = configAPI.AddUser(username, true)
+	_ = configAPI.Commit()
 
 	// sync the new user to the cluster
 	if err := API.Ktrl().IsAvailable(); err != nil {
-		return err
+		p := &util.HelpPanic{
+			Reason: err.Error(),
+		}
+		display, _ := p.Display()
+		return errors.New(display)
 	}
 
 	// Create the user
 	cueAPI := API.Cue()
 	user := make(map[string]string)
 	user["data.name"] = username
-	userVal, err := cueAPI.GenerateCueSpec("user", user)
+	userVal, err := cueAPI.GenerateCueSpec("#user", user)
 	if err != nil {
-		// TODO: return err format
+		p := util.HelpPanic{
+			Reason: `ktrl is not running.`,
+		}
+		display, _ := p.Display()
+		return errors.New(display)
 	}
 
-	API.Ktrl().Apply(userVal)
+	_, err = API.Ktrl().Apply(userVal)
+	if err != nil {
+		p := util.HelpPanic{
+			Reason: err.Error(),
+		}
+		display, _ := p.Display()
+		return errors.New(display)
+	}
 
 	return nil
 }

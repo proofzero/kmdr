@@ -27,7 +27,6 @@ import (
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 
-	"github.com/proofzero/kmdr/util"
 	kb "github.com/proofzero/proto/pkg/v1alpha1"
 )
 
@@ -132,19 +131,11 @@ func (ktrl ktrlAPI) InitConfig() error {
 // IsAvailable checks if the ktrl daemon is installed and running
 func (ktrl ktrlAPI) IsAvailable() error {
 	if _, err := exec.LookPath("ktrl"); err != nil {
-		p := util.HelpPanic{
-			Reason: `ktrl is not installed and running.`,
-		}
-		display, _ := p.Display()
-		return errors.New(display)
+		return errors.New("ktrl is not installed and running")
 	}
 	// check if ktrl is running
 	if !checkKtrlProcess() {
-		p := util.HelpPanic{
-			Reason: `ktrl is not running.`,
-		}
-		display, _ := p.Display()
-		return errors.New(display)
+		return errors.New("ktrl is not running")
 	}
 	return nil
 }
