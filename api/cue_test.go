@@ -17,6 +17,7 @@ package api
 
 import (
 	"fmt"
+	"reflect"
 	"testing"
 
 	"cuelang.org/go/cue"
@@ -229,6 +230,39 @@ func Test_cueAPI_FetchSchema(t *testing.T) {
 			}
 			if got.Err() != nil && !tt.wantErr {
 				t.Errorf("cueAPI.FetchSchema() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_cueAPI_unifyKmdrModule(t *testing.T) {
+	type fields struct {
+		context         *cue.Context
+		definitions     cue.Value
+		schemasVersions *map[string]cue.Value
+		schemaFetcher   func(apiVersion string) ([]byte, error)
+	}
+	type args struct {
+		input cue.Value
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   cue.Value
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			api := cueAPI{
+				context:         tt.fields.context,
+				definitions:     tt.fields.definitions,
+				schemasVersions: tt.fields.schemasVersions,
+				schemaFetcher:   tt.fields.schemaFetcher,
+			}
+			if got := api.unifyKmdrModule(tt.args.input); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("cueAPI.unifyKmdrModule() = %v, want %v", got, tt.want)
 			}
 		})
 	}

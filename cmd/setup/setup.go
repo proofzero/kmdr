@@ -82,10 +82,10 @@ func setupCmdRun(cmd *cobra.Command, args []string) error {
 	home, _ := homedir.Dir()
 	pkFile := fmt.Sprintf("%s/.config/kubelt/keys/%s.pub", home, username)
 	skFile := fmt.Sprintf("%s/.config/kubelt/keys/%s", home, username)
-	_, err = os.Create(fmt.Sprintf("%s/.config/kubelt/keys", home)) // TODO: move this to a util
+	_, _ = os.Create(fmt.Sprintf("%s/.config/kubelt/keys", home)) // TODO: move this to a util
 	// TODO: check errors
-	err = ioutil.WriteFile(pkFile, pk[:], 0644)
-	err = ioutil.WriteFile(skFile, sk[:], 0644)
+	_ = ioutil.WriteFile(pkFile, pk[:], 0644)
+	_ = ioutil.WriteFile(skFile, sk[:], 0644)
 	if err != nil {
 		return err
 	}

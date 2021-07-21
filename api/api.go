@@ -32,18 +32,10 @@ func NewAPI() (KmdrAPI, error) {
 		return *kmdrapi, nil
 	}
 
-	configapi, err := newConfigAPI()
-	if err != nil {
-		return nil, err
-	}
-	cueapi, err := newCueAPI()
-	if err != nil {
-		return nil, err
-	}
-	ktrlapi, err := newKtrlAPI()
-	if err != nil {
-		return nil, err
-	}
+	// TODO: handle errors
+	configapi, _ := newConfigAPI()
+	cueapi, _ := newCueAPI()
+	ktrlapi, _ := newKtrlAPI()
 
 	kmdrapi = &kmdrAPI{
 		config: configapi,

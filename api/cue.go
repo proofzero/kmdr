@@ -107,17 +107,17 @@ func newCueAPI() (CueAPI, error) {
 		return v, nil
 	}
 
-	_, err = mustFind(defs.LookupPath(cue.ParsePath("#manifests")))
-	if err != nil {
-		return nil, err
-	}
-
-	cue := cueAPI{
+	c := cueAPI{
 		context:     cueContext,
 		definitions: defs,
 	}
-	cue.schemaFetcher = cue.fetchSchema
-	return cue, nil
+	c.schemaFetcher = c.fetchSchema
+
+	_, err = mustFind(defs.LookupPath(cue.ParsePath("#manifests")))
+	if err != nil {
+		return c, err
+	}
+	return c, nil
 }
 
 // CompileShemaFromString accepts a string containg cue then builds and returns a  cue.Value
