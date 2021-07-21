@@ -17,20 +17,20 @@ package apply
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
 
 	"cuelang.org/go/cue"
 	"github.com/proofzero/kmdr/api"
+	"github.com/proofzero/kmdr/util"
 	"github.com/spf13/cobra"
 )
 
 var applyExtraHelp string = `{{with (or .Long .Short)}}{{. | trimTrailingWhitespaces}}
 {{end}}{{if or .Runnable .HasSubCommands}}{{.UsageString}}{{end}}
 `
-
-var minFlagErr string = `Must supply a manifest with "-f" or "--filename"`
 
 var file string
 
@@ -45,7 +45,7 @@ func NewApplyCmd() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&file, "filename", "f", "", "object manifest")
-	cmd.MarkFlagRequired("filename")
+	_ = cmd.MarkFlagRequired("filename")
 
 	cmd.SetHelpTemplate(applyExtraHelp)
 	return cmd
@@ -67,40 +67,53 @@ func applyCmdRun(cmd *cobra.Command, args []string) error {
 		applyStr = string(fBytes)
 	}
 
-	API := api.NewAPI()
+	API, _ := api.NewAPI()
+
 	validResources, err := runValidation(applyStr, API.Cue())
 	if err != nil {
-		return err
+		p := &util.HelpPanic{
+			Reason: err.Error(),
+		}
+		display, _ := p.Display()
+		return errors.New(display)
 	}
 
-	client, _ := api.NewKtrlClient()
-	err = applyResources(validResources, client)
+	err = applyResources(validResources, API.Ktrl())
 	if err != nil {
-		return err
+		p := &util.HelpPanic{
+			Reason: err.Error(),
+		}
+		display, _ := p.Display()
+		return errors.New(display)
 	}
 
 	return nil
 }
 
-func runValidation(applyStr string, cueAPI api.CueAPI) (cue.Value, error) {
-	applySchemas, err := cueAPI.CompileSchemaFromString(applyStr)
+func runValidation(applyStr string, cueApi api.CueAPI) (cue.Value, error) {
+	applySchemas, err := cueApi.CompileSchemaFromString(applyStr)
 	if err != nil {
 		return cue.Value{}, err
 	}
 
 	manifests := applySchemas.Value().LookupPath(cue.ParsePath("manifests"))
-	schemas, _ := cueAPI.FetchSchema("kubelt://kmdr")
-	mandef := schemas.LookupPath(cue.ParsePath("#manifests"))
 
-	if err := cueAPI.ValidateResource(manifests, mandef); err != nil {
-		return cue.Value{}, err
+	if val, err := cueApi.ValidateResource("#manifests", manifests); err != nil {
+		p := &util.HelpPanic{
+			Reason: err.Error(),
+		}
+		display, _ := p.Display(val, manifests.Eval())
+		return cue.Value{}, errors.New(display)
 	}
 
 	return applySchemas, err
 }
 
-func applyResources(validResources cue.Value, client *api.Client) error {
-	resp, err := client.Apply(validResources)
+func applyResources(validResources cue.Value, ktrlApi api.KtrlAPI) error {
+	if err := ktrlApi.IsAvailable(); err != nil {
+		return err
+	}
+	resp, err := ktrlApi.Apply(validResources)
 	if err != nil {
 		return err
 	}

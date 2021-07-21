@@ -1,6 +1,6 @@
 # ktrl/BAZEL.build
 
-load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_embed_data", "go_library")
 load("@bazel_gazelle//:def.bzl", "gazelle")
 load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
 
@@ -19,15 +19,18 @@ load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
 # gazelle:prefix github.com/proofzero/kmdr
 gazelle(name = "gazelle")
 
-
 go_library(
     name = "kmdr_lib",
     srcs = ["main.go"],
+    # srcs = glob(["static/**/*"]),
+    embedsrcs = glob(["static/**/*"]),
     importpath = "github.com/proofzero/kmdr",
     visibility = ["//visibility:private"],
-    deps = ["//cmd"],
+    deps = [
+        "//api",
+        "//cmd",
+    ],
 )
-
 
 # TODO: add version numbers for genrules
 
@@ -35,14 +38,16 @@ go_library(
 # -----------------------------------------------------------------------
 go_binary(
     name = "kmdr_linux_amd64",
-    goos="linux",
-    goarch="amd64",
-    cgo=True,
-    gc_goopts=[
-        "-dynlink"
-    ],
-    linkmode="pie",
+    cgo = True,
     embed = [":kmdr_lib"],
+    gc_goopts = [
+        "-dynlink",
+    ],
+    goarch = "amd64",
+    goos = "linux",
+    linkmode = "pie",
+    pure = "off",
+    # static = "on",
     visibility = ["//visibility:public"],
 )
 
@@ -53,21 +58,20 @@ genrule(
     cmd = "cp $(SRCS) $@",
 )
 
-
 # Windows
 # -----------------------------------------------------------------------
 go_binary(
     name = "kmdr_windows_amd64",
-    goos="windows",
-    goarch="amd64",
-    cgo=True,
-    gc_goopts=[
-        "-dynlink"
-    ],
-    linkmode="pie",
+    out = "kmdr",
+    cgo = True,
     embed = [":kmdr_lib"],
+    gc_goopts = [
+        "-dynlink",
+    ],
+    goarch = "amd64",
+    goos = "windows",
+    linkmode = "pie",
     visibility = ["//visibility:public"],
-    out="kmdr",
 )
 
 genrule(
@@ -81,16 +85,16 @@ genrule(
 # -----------------------------------------------------------------------
 go_binary(
     name = "kmdr_osx_amd64",
-    goos="darwin",
-    goarch="amd64",
-    cgo=True,
-    gc_goopts=[
-        "-dynlink"
-    ],
-    linkmode="pie",
+    out = "kmdr",
+    cgo = True,
     embed = [":kmdr_lib"],
+    gc_goopts = [
+        "-dynlink",
+    ],
+    goarch = "amd64",
+    goos = "darwin",
+    linkmode = "pie",
     visibility = ["//visibility:public"],
-    out="kmdr",
 )
 
 genrule(

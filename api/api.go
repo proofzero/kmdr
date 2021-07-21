@@ -16,33 +16,60 @@ limitations under the License.
 package api
 
 import (
-	"cuelang.org/go/cue/cuecontext"
+	"embed"
+)
+
+// this api is used multuple times during an execution
+// so we create a singleton
+var (
+	kmdrapi  *kmdrAPI
+	StaticFS embed.FS
 )
 
 // NewAPI creates a instance of KmdrAPI
-func NewAPI() KmdrAPI {
-	cueContext := cuecontext.New()
-	cue := cueAPI{
-		context: cueContext,
+func NewAPI() (KmdrAPI, error) {
+	if kmdrapi != nil {
+		return *kmdrapi, nil
 	}
-	cue.schemaFetcher = cue.fetchSchema
 
-	return kmdrAPI{
-		cue: cue,
+	// TODO: handle errors
+	configapi, _ := newConfigAPI()
+	cueapi, _ := newCueAPI()
+	ktrlapi, _ := newKtrlAPI()
+
+	kmdrapi = &kmdrAPI{
+		config: configapi,
+		cue:    cueapi,
+		ktrl:   ktrlapi,
 	}
+	return *kmdrapi, nil
 }
 
-// KMDRApi
+// KmdrApi
 type KmdrAPI interface {
+	Config() ConfigAPI
 	Cue() CueAPI
+	Ktrl() KtrlAPI
 }
 
 // kmdrAPI
 type kmdrAPI struct {
-	cue CueAPI
+	config ConfigAPI
+	cue    CueAPI
+	ktrl   KtrlAPI
+}
+
+// Config returns an instance of the CueAPI
+func (api kmdrAPI) Config() ConfigAPI {
+	return api.config
 }
 
 // Cue returns an instance of the CueAPI
 func (api kmdrAPI) Cue() CueAPI {
 	return api.cue
+}
+
+// Ktrl returns an instance of the KtrlAPI
+func (api kmdrAPI) Ktrl() KtrlAPI {
+	return api.ktrl
 }

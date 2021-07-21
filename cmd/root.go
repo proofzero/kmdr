@@ -25,6 +25,7 @@ import (
 	"github.com/spf13/viper"
 
 	apply "github.com/proofzero/kmdr/cmd/apply"
+	"github.com/proofzero/kmdr/cmd/setup"
 	version "github.com/proofzero/kmdr/cmd/version"
 )
 
@@ -55,6 +56,7 @@ func init() {
 	// TODO: init command to generate ~/.config/kubelt/config.toml
 	rootCmd.AddCommand(version.NewVersionCmd())
 	rootCmd.AddCommand(apply.NewApplyCmd())
+	rootCmd.AddCommand(setup.NewSetupCmd())
 
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,

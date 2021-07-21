@@ -3,7 +3,7 @@ manifests: {
         apiVersion: "kubelt://v1alpha1"
         kind: "Space"
         metadata: {
-            name:         "foo"
+            name: "foo"
         }
         data: {
             index: false

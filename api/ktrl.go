@@ -16,9 +16,13 @@ limitations under the License.
 package api
 
 import (
-	"log"
+	"context"
+	"errors"
+	"fmt"
+	"os/exec"
 	"path"
 
+	"cuelang.org/go/cue"
 	"github.com/adrg/xdg"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
@@ -26,38 +30,64 @@ import (
 	kb "github.com/proofzero/proto/pkg/v1alpha1"
 )
 
-// Client for managing the ktrl grpc service
-type Client struct {
-	Connection *grpc.ClientConn
-	Client     kb.KubeltClient
-	Config     *Config
+// KtrlAPI
+type KtrlAPI interface {
+	InitConfig() error
+	IsAvailable() error
+	Apply(cueValue cue.Value) (*kb.ApplyDefault, error)
 }
 
-// Config
-type Config struct {
-	Ktrl           KtrlConfig             `toml:"ktrl"`
+// ktrlAPI for managing the ktrl grpc service
+type ktrlAPI struct {
+	Connection *grpc.ClientConn
+	Client     kb.KubeltClient
+	Config     ktrlConfig
+}
+
+// ktrlConfig
+type ktrlConfig struct {
+	Server         serverConfig           `toml:"server"`
 	CurrentContext string                 `toml:"current_context"`
 	Contexts       map[string]*kb.Context `toml:"contexts"`
 }
 
-// KtrlConfig
-type KtrlConfig struct {
-	Server ServerConfig
-}
-
-// ServerConfig
-type ServerConfig struct {
+// serverConfig
+type serverConfig struct {
 	Port     string `toml:"port"`
 	Protocol string `toml:"protocol"`
 }
 
-var (
-	ktrlClient *Client
-	ktrlConfig *Config
-)
+// NewKtrlAPI returns a new Client
+func newKtrlAPI(options ...grpc.DialOption) (KtrlAPI, error) {
+	ktrl := ktrlAPI{
+		Config: ktrlConfig{
+			Server: serverConfig{},
+		},
+	}
+	err := ktrl.InitConfig()
+	if err != nil {
+		return ktrl, err
+	}
+
+	if len(options) == 0 {
+		options = []grpc.DialOption{
+			grpc.WithInsecure(),
+		}
+	}
+
+	conn, err := grpc.Dial(ktrl.Config.Server.Port, options...)
+	if err != nil {
+		return ktrl, fmt.Errorf("fail to dial: %v", err)
+	}
+	ktrl.Connection = conn
+
+	ktrl.Client = kb.NewKubeltClient(conn)
+
+	return ktrl, err
+}
 
 // init reads in configurations for the kubelt config directory to setup a ktrlClient
-func initConfig() {
+func (ktrl ktrlAPI) InitConfig() error {
 	parentName := "kubelt"
 	fileName := "config"
 	configType := "toml"
@@ -83,43 +113,41 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			// Config file not found; ignore error if desired.
-			log.Print("missing config file:", err)
+			fmt.Printf("missing config file: %s", err)
 		} else {
 			// Config file was found but another error was produced.
-			log.Fatal("error loading configuration:", err)
+			return fmt.Errorf("error loading configuration: %s", err)
 		}
 	}
 
-	err := viper.Unmarshal(&ktrlConfig)
+	err := viper.Unmarshal(&ktrl.Config)
 	if err != nil {
-		log.Fatal("could not unmarshal config")
+		return fmt.Errorf("could not unmarshal config: %s", err)
 	}
+
+	return nil
 }
 
-// NewKtrlClient returns a new Client
-func NewKtrlClient(options ...grpc.DialOption) (*Client, error) {
-	if ktrlClient != nil {
-		return ktrlClient, nil
+// IsAvailable checks if the ktrl daemon is installed and running
+func (ktrl ktrlAPI) IsAvailable() error {
+	if _, err := exec.LookPath("ktrl"); err != nil {
+		return errors.New("ktrl is not installed and running")
 	}
-
-	initConfig()
-
-	if len(options) == 0 {
-		options = []grpc.DialOption{
-			grpc.WithInsecure(),
-		}
+	// check if ktrl is running
+	if !checkKtrlProcess() {
+		return errors.New("ktrl is not running")
 	}
+	return nil
+}
 
-	conn, err := grpc.Dial(ktrlConfig.Ktrl.Server.Port, options...)
-	if err != nil {
-		log.Fatalf("fail to dial: %v", err)
+// Apply calls out to ktrl to mutate the kubelt graph using values supplied by the user
+func (ktrl ktrlAPI) Apply(cueValue cue.Value) (*kb.ApplyDefault, error) {
+	ctx := ktrl.Config.Contexts[ktrl.Config.CurrentContext]
+	cueString := fmt.Sprint(cueValue)
+	resource := &kb.Cue{
+		Cue: cueString,
 	}
-	client := kb.NewKubeltClient(conn)
-
-	ktrlClient = &Client{
-		Connection: conn,
-		Client:     client,
-		Config:     ktrlConfig,
-	}
-	return ktrlClient, err
+	request := &kb.ApplyRequest{Resources: resource, Context: ctx}
+	r, err := ktrl.Client.Apply(context.Background(), request)
+	return r, err
 }
