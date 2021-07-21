@@ -75,7 +75,11 @@ func setupCmdRun(cmd *cobra.Command, args []string) error {
 	// generate keys for user
 	pk, sk, err := util.GenerateUserKeys()
 	if err != nil {
-		return err
+		p := &util.HelpPanic{
+			Reason: "Error generating user keys: %s",
+		}
+		display, _ := p.Display(err)
+		return errors.New(display)
 	}
 	// write the keypair out to users config directory
 	// TODO: move to util or API and store keys in safer dir?
