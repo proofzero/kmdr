@@ -78,7 +78,7 @@ func setupCmdRun(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	// write the keypair out to users config directory
-	// TODO: move to util or API
+	// TODO: move to util or API and store keys in safer dir?
 	home, _ := homedir.Dir()
 	pkFile := fmt.Sprintf("%s/.config/kubelt/keys/%s.pub", home, username)
 	skFile := fmt.Sprintf("%s/.config/kubelt/keys/%s", home, username)
@@ -89,22 +89,20 @@ func setupCmdRun(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	// dat, _ := ioutil.ReadFile(pkFile)
-	// fmt.Println(dat)
 
 	// alias the keys in the context config using the username using viper
-	// configFile, _ := ioutil.ReadFile(fmt.Sprintf("%s/kmdr.cue", home))
-	// config :=
 	configAPI := API.Config()
-	configAPI, _ = configAPI.InitConfig()
-	configAPI, _ = configAPI.AddContext("foo", true)
-	configAPI, _ = configAPI.AddUser(username, true)
+	configAPI.InitConfig()
+	configAPI.AddContext("default", true)
+	configAPI.AddUser(username, true)
 	configAPI.Commit()
 
 	// sync the new user to the cluster
 	if err := API.Ktrl().IsAvailable(); err != nil {
 		return err
 	}
+
+	// Create the user
 	// API.Ktrl().Apply(...)
 
 	return nil
