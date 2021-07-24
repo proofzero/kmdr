@@ -49,23 +49,8 @@ func (mr *MockCueAPIMockRecorder) CompileSchemaFromString(apply interface{}) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CompileSchemaFromString", reflect.TypeOf((*MockCueAPI)(nil).CompileSchemaFromString), apply)
 }
 
-// FetchSchema mocks base method.
-func (m *MockCueAPI) FetchSchema(apiVersion string) (cue.Value, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FetchSchema", apiVersion)
-	ret0, _ := ret[0].(cue.Value)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// FetchSchema indicates an expected call of FetchSchema.
-func (mr *MockCueAPIMockRecorder) FetchSchema(apiVersion interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FetchSchema", reflect.TypeOf((*MockCueAPI)(nil).FetchSchema), apiVersion)
-}
-
 // GenerateCueSpec mocks base method.
-func (m *MockCueAPI) GenerateCueSpec(schema string, properties map[string]string) (cue.Value, error) {
+func (m *MockCueAPI) GenerateCueSpec(schema string, properties map[string]interface{}) (cue.Value, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GenerateCueSpec", schema, properties)
 	ret0, _ := ret[0].(cue.Value)
@@ -92,19 +77,4 @@ func (m *MockCueAPI) ValidateResource(def string, val cue.Value) (cue.Value, err
 func (mr *MockCueAPIMockRecorder) ValidateResource(def, val interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateResource", reflect.TypeOf((*MockCueAPI)(nil).ValidateResource), def, val)
-}
-
-// fetchSchema mocks base method.
-func (m *MockCueAPI) fetchSchema(apiVersion string) ([]byte, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "fetchSchema", apiVersion)
-	ret0, _ := ret[0].([]byte)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// fetchSchema indicates an expected call of fetchSchema.
-func (mr *MockCueAPIMockRecorder) fetchSchema(apiVersion interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "fetchSchema", reflect.TypeOf((*MockCueAPI)(nil).fetchSchema), apiVersion)
 }

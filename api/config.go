@@ -22,9 +22,10 @@ import (
 	"io/fs"
 	"io/ioutil"
 	"os"
+	"path"
 
 	"github.com/BurntSushi/toml"
-	"github.com/mitchellh/go-homedir"
+	"github.com/adrg/xdg"
 	kb "github.com/proofzero/proto/pkg/v1alpha1"
 )
 
@@ -34,6 +35,7 @@ type ConfigAPI interface {
 	AddContext(context string, isDefault ...bool) error
 	RemoveContext(context string) error
 	SetDefaultContext(context string) error
+	GetCurrentUser() (string, error)
 	AddUser(user string, isDefault ...bool) error
 	RemoveUser(user string) error
 	SetDefaultUser(user string) error
@@ -42,9 +44,11 @@ type ConfigAPI interface {
 
 // NOTE: We should consider doing an upstream to cobra/viper to support the use of CUElang
 // To avoid using toml
+// NOTE:PR has been open to Viper for the above note
 
 // configAPI for managing ktrl configs
 type configAPI struct {
+	configDir   string
 	CurrentUser string                       `toml:"current_user"`
 	Ktrl        ktrlConfig                   `toml:"ktrl"`
 	Users       map[string]map[string]string `toml:"users"` // TODO: User struct?
@@ -52,29 +56,45 @@ type configAPI struct {
 
 // NewConfigAPI returns a new ConfigAPI
 func newConfigAPI() (ConfigAPI, error) {
+	configDir := path.Join(xdg.ConfigHome, "kubelt")
 	c := &configAPI{
-		Ktrl:  ktrlConfig{},
-		Users: make(map[string]map[string]string),
+		configDir:   configDir,
+		CurrentUser: "",
+		Users:       make(map[string]map[string]string),
+		Ktrl: ktrlConfig{
+			CurrentContext: "default",
+			Server: serverConfig{
+				Protocol: "tcp",
+				Port:     ":50051",
+			},
+			Contexts: map[string]*kb.Context{
+				"default": {
+					Name: "default",
+				},
+			},
+		},
 	}
 	return c, nil
 }
 
 // initConfig bootstraps the ktrl config
 func (c *configAPI) InitConfig() error {
-	home, _ := homedir.Dir()
-	configPath := fmt.Sprintf("%s/.config/kubelt/config.toml", home)
-	// check if the config already exists
-	if _, err := os.Stat(configPath); !errors.Is(err, fs.ErrNotExist) {
-		// if it does, bootstrap the config struct
-		f, _ := ioutil.ReadFile(configPath)
-		if _, err := toml.Decode(string(f), &c); err != nil {
-			return err
+	if configPath, err := xdg.ConfigFile("kubelt/config.toml"); err != nil {
+		return err
+	} else {
+		// check if the config already exists
+		if _, err := os.Stat(configPath); !errors.Is(err, fs.ErrNotExist) {
+			// if it does, bootstrap the config struct
+			f, _ := ioutil.ReadFile(configPath)
+			if _, err := toml.Decode(string(f), &c); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
 }
 
-// AddContext adds a context t o the config
+// AddContext adds a context to the config
 func (c *configAPI) AddContext(context string, isDefault ...bool) error {
 	if c.Ktrl.Contexts == nil {
 		c.Ktrl.Contexts = make(map[string]*kb.Context)
@@ -105,13 +125,21 @@ func (c *configAPI) SetDefaultContext(context string) error {
 	return nil
 }
 
+func (c *configAPI) GetCurrentUser() (string, error) {
+	if c.CurrentUser == "" {
+		return "", fmt.Errorf("No user set.")
+	}
+	return c.CurrentUser, nil
+}
+
 // AddUser adds a context to the config
-func (c *configAPI) AddUser(user string, isDefault ...bool) error {
+func (c *configAPI) AddUser(username string, isDefault ...bool) error {
 	// TODO: check if user already exists
-	c.Users[user] = make(map[string]string)
-	c.Users[user]["Name"] = user
+
+	c.Users[username] = make(map[string]string)
+	c.Users[username]["Name"] = username
 	if len(isDefault) > 0 && isDefault[0] {
-		c.CurrentUser = user
+		c.CurrentUser = username
 	}
 	return nil
 }
@@ -135,8 +163,7 @@ func (c *configAPI) SetDefaultUser(user string) error {
 
 // Commit write the config to disk
 func (c *configAPI) Commit() error {
-	home, _ := homedir.Dir()
-	configPath := fmt.Sprintf("%s/.config/kubelt/config.toml", home)
+	configPath := fmt.Sprintf("%s/config.toml", c.configDir)
 	t := template.Must(template.ParseFS(StaticFS, "static/templates/kmdr.gotmpl"))
 	f, err := os.Create(configPath)
 	if err != nil {

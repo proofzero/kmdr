@@ -17,12 +17,9 @@ package apply
 
 import (
 	"bufio"
-	"errors"
-	"fmt"
 	"io/ioutil"
 	"os"
 
-	"cuelang.org/go/cue"
 	"github.com/proofzero/kmdr/api"
 	"github.com/proofzero/kmdr/util"
 	"github.com/spf13/cobra"
@@ -67,61 +64,12 @@ func applyCmdRun(cmd *cobra.Command, args []string) error {
 		applyStr = string(fBytes)
 	}
 
+	help := util.NewHelp()
 	API, _ := api.NewAPI()
-
-	validResources, err := runValidation(applyStr, API.Cue())
+	err := API.Apply(applyStr)
 	if err != nil {
-		p := &util.HelpPanic{
-			Reason: err.Error(),
-		}
-		display, _ := p.Display()
-		return errors.New(display)
+		return help.Panic(err.Error(), true)
 	}
 
-	err = applyResources(validResources, API.Ktrl())
-	if err != nil {
-		p := &util.HelpPanic{
-			Reason: err.Error(),
-		}
-		display, _ := p.Display()
-		return errors.New(display)
-	}
-
-	return nil
-}
-
-func runValidation(applyStr string, cueApi api.CueAPI) (cue.Value, error) {
-	applySchemas, err := cueApi.CompileSchemaFromString(applyStr)
-	if err != nil {
-		return cue.Value{}, err
-	}
-
-	manifests := applySchemas.Value().LookupPath(cue.ParsePath("manifests"))
-
-	if val, err := cueApi.ValidateResource("#manifests", manifests); err != nil {
-		p := &util.HelpPanic{
-			Reason: err.Error(),
-		}
-		display, _ := p.Display(val, manifests.Eval())
-		return cue.Value{}, errors.New(display)
-	}
-
-	return applySchemas, err
-}
-
-func applyResources(validResources cue.Value, ktrlApi api.KtrlAPI) error {
-	if err := ktrlApi.IsAvailable(); err != nil {
-		return err
-	}
-	resp, err := ktrlApi.Apply(validResources)
-	if err != nil {
-		return err
-	}
-	if resp.Error != nil {
-		return fmt.Errorf(resp.Error.Message)
-	}
-	for _, v := range resp.Resources.Cue {
-		fmt.Println(v)
-	}
 	return nil
 }

@@ -48,7 +48,7 @@ var (
 // CueAPI
 type CueAPI interface {
 	CompileSchemaFromString(apply string) (cue.Value, error)
-	GenerateCueSpec(schema string, properties map[string]string) (cue.Value, error)
+	GenerateCueSpec(schema string, properties map[string]interface{}) (cue.Value, error)
 	ValidateResource(def string, val cue.Value) (cue.Value, error)
 }
 
@@ -66,6 +66,7 @@ func (api cueAPI) unifyKmdrModule(input cue.Value) cue.Value {
 
 // NewCueAPI returns a new CueAPI
 func newCueAPI() (CueAPI, error) {
+	// Load definitions from the embedded FS
 	overlay := make(map[string]load.Source)
 	err := fs.WalkDir(StaticFS, ".", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
@@ -108,6 +109,7 @@ func newCueAPI() (CueAPI, error) {
 		definitions: defs,
 	}
 
+	// Validate the embedded FS load worked
 	_, err = mustFind(defs.LookupPath(cue.ParsePath("#manifests")))
 	if err != nil {
 		return c, err
@@ -137,7 +139,7 @@ func (api cueAPI) ValidateResource(def string, val cue.Value) (cue.Value, error)
 }
 
 // GenerateCueSpec injects concrete values and into cue value and validates the results before returning the concrete cue value.
-func (api cueAPI) GenerateCueSpec(schema string, properties map[string]string) (cue.Value, error) {
+func (api cueAPI) GenerateCueSpec(schema string, properties map[string]interface{}) (cue.Value, error) {
 	// lookup the schema type from all the available schemas in the cue.Instance
 	specSchema := api.definitions.LookupPath(cue.ParsePath(schema))
 	if !specSchema.Exists() {

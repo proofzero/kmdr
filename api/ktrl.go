@@ -16,14 +16,10 @@ limitations under the License.
 package api
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"os/exec"
-	"path"
 
-	"cuelang.org/go/cue"
-	"github.com/adrg/xdg"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 
@@ -32,9 +28,10 @@ import (
 
 // KtrlAPI
 type KtrlAPI interface {
-	InitConfig() error
-	IsAvailable() error
-	Apply(cueValue cue.Value) (*kb.ApplyDefault, error)
+	isAvailable() (bool, error)
+	initConfig() error
+	Query(interface{}) (interface{}, error) // TODO: correct signature
+	Apply([]interface{}) (*kb.ApplyDefault, error)
 }
 
 // ktrlAPI for managing the ktrl grpc service
@@ -59,12 +56,12 @@ type serverConfig struct {
 
 // NewKtrlAPI returns a new Client
 func newKtrlAPI(options ...grpc.DialOption) (KtrlAPI, error) {
-	ktrl := ktrlAPI{
+	ktrl := &ktrlAPI{
 		Config: ktrlConfig{
 			Server: serverConfig{},
 		},
 	}
-	err := ktrl.InitConfig()
+	err := ktrl.initConfig()
 	if err != nil {
 		return ktrl, err
 	}
@@ -87,39 +84,7 @@ func newKtrlAPI(options ...grpc.DialOption) (KtrlAPI, error) {
 }
 
 // init reads in configurations for the kubelt config directory to setup a ktrlClient
-func (ktrl ktrlAPI) InitConfig() error {
-	parentName := "kubelt"
-	fileName := "config"
-	configType := "toml"
-
-	configDir := path.Join(xdg.ConfigHome, parentName)
-
-	// Will be uppercased automatically. Environment variables must
-	// have this prefix to be treated as configuration sources.
-	viper.SetEnvPrefix(fileName)
-
-	viper.SetDefault("ktrl.server.protocol", "tcp")
-
-	viper.SetDefault("ktrl.server.port", ":50051")
-
-	// name of config file (without extension)
-	viper.SetConfigName(fileName)
-	// REQUIRED if the config file does not have the extension in the name.
-	viper.SetConfigType(configType)
-	// Path to look for the config file in. Call multiple times to
-	// add many search paths.
-	viper.AddConfigPath(configDir)
-
-	if err := viper.ReadInConfig(); err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			// Config file not found; ignore error if desired.
-			fmt.Printf("missing config file: %s", err)
-		} else {
-			// Config file was found but another error was produced.
-			return fmt.Errorf("error loading configuration: %s", err)
-		}
-	}
-
+func (ktrl *ktrlAPI) initConfig() error {
 	err := viper.Unmarshal(&ktrl.Config)
 	if err != nil {
 		return fmt.Errorf("could not unmarshal config: %s", err)
@@ -129,25 +94,38 @@ func (ktrl ktrlAPI) InitConfig() error {
 }
 
 // IsAvailable checks if the ktrl daemon is installed and running
-func (ktrl ktrlAPI) IsAvailable() error {
+func (ktrl *ktrlAPI) isAvailable() (bool, error) {
+	// TODO: use a health check endpoint instead:
 	if _, err := exec.LookPath("ktrl"); err != nil {
-		return errors.New("ktrl is not installed and running")
+		return false, errors.New("ktrl is not installed and running")
 	}
 	// check if ktrl is running
 	if !checkKtrlProcess() {
-		return errors.New("ktrl is not running")
+		return false, errors.New("ktrl is not running")
 	}
-	return nil
+	return true, nil
+}
+
+// Run a query against the data grid
+func (ktrl *ktrlAPI) Query(q interface{}) (interface{}, error) {
+	if ok, err := ktrl.isAvailable(); !ok {
+		return nil, err
+	}
+	return nil, nil
 }
 
 // Apply calls out to ktrl to mutate the kubelt graph using values supplied by the user
-func (ktrl ktrlAPI) Apply(cueValue cue.Value) (*kb.ApplyDefault, error) {
-	ctx := ktrl.Config.Contexts[ktrl.Config.CurrentContext]
-	cueString := fmt.Sprint(cueValue)
-	resource := &kb.Cue{
-		Cue: cueString,
+func (ktrl *ktrlAPI) Apply([]interface{}) (*kb.ApplyDefault, error) {
+	if ok, err := ktrl.isAvailable(); !ok {
+		return nil, err
 	}
-	request := &kb.ApplyRequest{Resources: resource, Context: ctx}
-	r, err := ktrl.Client.Apply(context.Background(), request)
-	return r, err
+	return nil, nil
+	// ctx := ktrl.Config.Contexts[ktrl.Config.CurrentContext]
+	// cueString := fmt.Sprint(cueValue)
+	// resource := &kb.Cue{
+	// 	Cue: cueString,
+	// }
+	// request := &kb.ApplyRequest{Resources: resource, Context: ctx}
+	// r, err := ktrl.Client.Apply(context.Background(), request)
+	// return r, err
 }

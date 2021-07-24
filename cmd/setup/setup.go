@@ -16,12 +16,6 @@ limitations under the License.
 package setup
 
 import (
-	"errors"
-	"fmt"
-	"io/ioutil"
-	"os"
-
-	"github.com/mitchellh/go-homedir"
 	"github.com/proofzero/kmdr/api"
 	"github.com/proofzero/kmdr/util"
 	"github.com/spf13/cobra"
@@ -45,11 +39,8 @@ func NewSetupCmd() *cobra.Command {
 		Long:  `setup kubelt kmdr`,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			if username == "" && anon == "" {
-				p := util.HelpPanic{
-					Reason: "You must set --username or --anonymous flag when running setup.",
-				}
-				display, _ := p.Display()
-				return errors.New(display)
+				help := util.NewHelp()
+				return help.Panic("You must set --username or --anonymous flag when running setup.", false)
 			} else if anon != "" {
 				username = anon
 			}
@@ -68,73 +59,15 @@ func NewSetupCmd() *cobra.Command {
 
 // setupCmdRun bootstraps the local enviroment and configurations
 func setupCmdRun(cmd *cobra.Command, args []string) error {
+	help := util.NewHelp()
 	API, err := api.NewAPI()
 	if err != nil {
 		return err
 	}
-	// generate keys for user
-	pk, sk, err := util.GenerateUserKeys()
-	if err != nil {
-		p := &util.HelpPanic{
-			Reason: "Error generating user keys: %s",
-		}
-		display, _ := p.Display(err)
-		return errors.New(display)
-	}
-	// write the keypair out to users config directory
-	// TODO: move to util or API and store keys in safer dir?
-	home, _ := homedir.Dir()
-	pkFile := fmt.Sprintf("%s/.config/kubelt/keys/%s.pub", home, username)
-	skFile := fmt.Sprintf("%s/.config/kubelt/keys/%s", home, username)
-	_, _ = os.Create(fmt.Sprintf("%s/.config/kubelt/keys", home)) // TODO: move this to a util
-	// TODO: check errors
-	_ = ioutil.WriteFile(pkFile, pk[:], 0644)
-	_ = ioutil.WriteFile(skFile, sk[:], 0644)
-	if err != nil {
-		p := &util.HelpPanic{
-			Reason: err.Error(),
-		}
-		display, _ := p.Display()
-		return errors.New(display)
-	}
 
-	// create/update the config
-	// TODO: handle errors
-	configAPI := API.Config()
-	_ = configAPI.InitConfig()
-	_ = configAPI.AddContext("default", true)
-	_ = configAPI.AddUser(username, true)
-	_ = configAPI.Commit()
-
-	// sync the new user to the cluster
-	if err := API.Ktrl().IsAvailable(); err != nil {
-		p := &util.HelpPanic{
-			Reason: err.Error(),
-		}
-		display, _ := p.Display()
-		return errors.New(display)
-	}
-
-	// Create the user
-	cueAPI := API.Cue()
-	user := make(map[string]string)
-	user["data.name"] = username
-	userVal, err := cueAPI.GenerateCueSpec("#user", user)
+	err = API.SetupUser(username)
 	if err != nil {
-		p := util.HelpPanic{
-			Reason: `ktrl is not running.`,
-		}
-		display, _ := p.Display()
-		return errors.New(display)
-	}
-
-	_, err = API.Ktrl().Apply(userVal)
-	if err != nil {
-		p := util.HelpPanic{
-			Reason: err.Error(),
-		}
-		display, _ := p.Display()
-		return errors.New(display)
+		return help.Panic(err.Error(), true)
 	}
 
 	return nil

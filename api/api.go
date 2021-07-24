@@ -17,6 +17,9 @@ package api
 
 import (
 	"embed"
+	"fmt"
+
+	"cuelang.org/go/cue"
 )
 
 // this api is used multuple times during an execution
@@ -32,44 +35,118 @@ func NewAPI() (KmdrAPI, error) {
 		return *kmdrapi, nil
 	}
 
-	// TODO: handle errors
+	authapi, _ := newAuthApi()
 	configapi, _ := newConfigAPI()
 	cueapi, _ := newCueAPI()
 	ktrlapi, _ := newKtrlAPI()
+	planapi, _ := newPlanAPI()
 
 	kmdrapi = &kmdrAPI{
+		auth:   authapi,
 		config: configapi,
 		cue:    cueapi,
 		ktrl:   ktrlapi,
+		plan:   planapi,
 	}
 	return *kmdrapi, nil
 }
 
 // KmdrApi
 type KmdrAPI interface {
-	Config() ConfigAPI
-	Cue() CueAPI
-	Ktrl() KtrlAPI
+	SetupUser(string) error
+	Apply(string) error
 }
 
 // kmdrAPI
 type kmdrAPI struct {
+	auth   AuthAPI
 	config ConfigAPI
 	cue    CueAPI
 	ktrl   KtrlAPI
+	plan   PlanAPI
 }
 
-// Config returns an instance of the CueAPI
-func (api kmdrAPI) Config() ConfigAPI {
-	return api.config
+func (api kmdrAPI) SetupUser(username string) error {
+	// TODO: prompt for passphrase?
+	if err := api.auth.AddKeys(username); err != nil {
+		return err
+	}
+
+	_ = api.config.InitConfig()
+	_ = api.config.AddContext("default", true)
+	_ = api.config.AddUser(username, true)
+	if err := api.config.Commit(); err != nil {
+		return err
+	}
+
+	user := make(map[string]interface{})
+	user["data.name"] = username
+	user["data.publicEncryptionKey"] = api.auth.EncryptionKey()
+	user["data.publicSignatureKey"] = api.auth.AuthKey()
+	if userVal, err := api.cue.GenerateCueSpec("#user", user); err != nil {
+		return err
+	} else {
+		_, err = api.ktrl.Apply([]interface{}{userVal})
+		return err
+	}
 }
 
-// Cue returns an instance of the CueAPI
-func (api kmdrAPI) Cue() CueAPI {
-	return api.cue
-}
+func (api kmdrAPI) Apply(applyStr string) error {
+	// Load context
+	if err := api.config.InitConfig(); err != nil {
+		return err
+	}
 
-// Ktrl returns an instance of the KtrlAPI
-func (api kmdrAPI) Ktrl() KtrlAPI {
-	return api.ktrl
+	if user, err := api.config.GetCurrentUser(); err != nil {
+		return err
+	} else {
+		// Load keys into context
+		if err := api.auth.LoadKeys(user); err != nil {
+			return err
+		}
+	}
+
+	// convert the input to a cue value
+	applySchemas, err := api.cue.CompileSchemaFromString(applyStr)
+	if err != nil {
+		return err
+	}
+
+	// validate that the input is correct
+	manifests := applySchemas.Value().LookupPath(cue.ParsePath("manifests"))
+	if val, err := api.cue.ValidateResource("#manifests", manifests); err != nil {
+		return fmt.Errorf(fmt.Sprintf(err.Error(), val, manifests.Eval()))
+	}
+
+	// query for the worls as it relates to the manifests input
+	res, err := api.ktrl.Query(manifests)
+	if err != nil {
+		return err
+	}
+
+	// Validate and plan and return the commands
+	plan, err := api.plan.Plan(res)
+	if err != nil {
+		return err
+	}
+
+	// Sign the changes
+	for _, cmd := range plan {
+		// TODO: update the node
+		_, _ = api.auth.SignNode(cmd.([]byte))
+	}
+
+	// Apply the changes
+	resp, err := api.ktrl.Apply(plan)
+	if err != nil {
+		return err
+	}
+	if resp.Error != nil {
+		return fmt.Errorf(resp.Error.Message)
+	}
+	for _, v := range resp.Resources.Cue {
+		fmt.Println(v)
+	}
+
+	return nil
 }
