@@ -17,6 +17,11 @@ package api
 
 import (
 	"embed"
+	"errors"
+	"fmt"
+
+	"cuelang.org/go/cue"
+	"github.com/proofzero/kmdr/util"
 )
 
 // this api is used multuple times during an execution
@@ -32,12 +37,13 @@ func NewAPI() (KmdrAPI, error) {
 		return *kmdrapi, nil
 	}
 
-	// TODO: handle errors
+	authapi, _ := newAuthApi()
 	configapi, _ := newConfigAPI()
 	cueapi, _ := newCueAPI()
 	ktrlapi, _ := newKtrlAPI()
 
 	kmdrapi = &kmdrAPI{
+		auth:   authapi,
 		config: configapi,
 		cue:    cueapi,
 		ktrl:   ktrlapi,
@@ -47,29 +53,75 @@ func NewAPI() (KmdrAPI, error) {
 
 // KmdrApi
 type KmdrAPI interface {
-	Config() ConfigAPI
-	Cue() CueAPI
-	Ktrl() KtrlAPI
+	SetupUser(string) error
+	Apply(string) error
 }
 
 // kmdrAPI
 type kmdrAPI struct {
+	auth   AuthAPI
 	config ConfigAPI
 	cue    CueAPI
 	ktrl   KtrlAPI
 }
 
-// Config returns an instance of the CueAPI
-func (api kmdrAPI) Config() ConfigAPI {
-	return api.config
+func (api kmdrAPI) SetupUser(username string) error {
+	if err := api.auth.AddKeys(username); err != nil {
+		return err
+	}
+
+	_ = api.config.InitConfig()
+	_ = api.config.AddContext("default", true)
+	_ = api.config.AddUser(username, true)
+	if err := api.config.Commit(); err != nil {
+		return err
+	}
+
+	if err := api.ktrl.IsAvailable(); err != nil {
+		return err
+	}
+
+	user := make(map[string]interface{})
+	user["data.name"] = username
+	user["data.publicEncyrptionKey"] = api.auth.EncryptionKey()
+	user["data.publicSignatureKey"] = api.auth.AuthKey()
+	if userVal, err := api.cue.GenerateCueSpec("#user", user); err != nil {
+		return err
+	} else {
+		_, err = api.ktrl.Apply(userVal)
+		return err
+	}
 }
 
-// Cue returns an instance of the CueAPI
-func (api kmdrAPI) Cue() CueAPI {
-	return api.cue
-}
+func (api kmdrAPI) Apply(applyStr string) error {
+	applySchemas, err := api.cue.CompileSchemaFromString(applyStr)
+	if err != nil {
+		return err
+	}
 
-// Ktrl returns an instance of the KtrlAPI
-func (api kmdrAPI) Ktrl() KtrlAPI {
-	return api.ktrl
+	manifests := applySchemas.Value().LookupPath(cue.ParsePath("manifests"))
+
+	if val, err := api.cue.ValidateResource("#manifests", manifests); err != nil {
+		p := &util.HelpPanic{
+			Reason: err.Error(),
+		}
+		display, _ := p.Display(val, manifests.Eval())
+		return errors.New(display)
+	}
+
+	if err := api.ktrl.IsAvailable(); err != nil {
+		return err
+	}
+	resp, err := api.ktrl.Apply(applySchemas)
+	if err != nil {
+		return err
+	}
+	if resp.Error != nil {
+		return fmt.Errorf(resp.Error.Message)
+	}
+	for _, v := range resp.Resources.Cue {
+		fmt.Println(v)
+	}
+
+	return nil
 }

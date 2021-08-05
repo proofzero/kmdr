@@ -48,7 +48,7 @@ var (
 // CueAPI
 type CueAPI interface {
 	CompileSchemaFromString(apply string) (cue.Value, error)
-	GenerateCueSpec(schema string, properties map[string]string) (cue.Value, error)
+	GenerateCueSpec(schema string, properties map[string]interface{}) (cue.Value, error)
 	ValidateResource(def string, val cue.Value) (cue.Value, error)
 }
 
@@ -137,7 +137,7 @@ func (api cueAPI) ValidateResource(def string, val cue.Value) (cue.Value, error)
 }
 
 // GenerateCueSpec injects concrete values and into cue value and validates the results before returning the concrete cue value.
-func (api cueAPI) GenerateCueSpec(schema string, properties map[string]string) (cue.Value, error) {
+func (api cueAPI) GenerateCueSpec(schema string, properties map[string]interface{}) (cue.Value, error) {
 	// lookup the schema type from all the available schemas in the cue.Instance
 	specSchema := api.definitions.LookupPath(cue.ParsePath(schema))
 	if !specSchema.Exists() {
