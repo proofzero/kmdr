@@ -40,12 +40,14 @@ func NewAPI() (KmdrAPI, error) {
 	configapi, _ := newConfigAPI()
 	cueapi, _ := newCueAPI()
 	ktrlapi, _ := newKtrlAPI()
+	planapi, _ := newPlanAPI()
 
 	kmdrapi = &kmdrAPI{
 		auth:   authapi,
 		config: configapi,
 		cue:    cueapi,
 		ktrl:   ktrlapi,
+		plan:   planapi,
 	}
 	return *kmdrapi, nil
 }
@@ -62,6 +64,7 @@ type kmdrAPI struct {
 	config ConfigAPI
 	cue    CueAPI
 	ktrl   KtrlAPI
+	plan   PlanAPI
 }
 
 func (api kmdrAPI) SetupUser(username string) error {
@@ -76,10 +79,6 @@ func (api kmdrAPI) SetupUser(username string) error {
 		return err
 	}
 
-	if err := api.ktrl.IsAvailable(); err != nil {
-		return err
-	}
-
 	user := make(map[string]interface{})
 	user["data.name"] = username
 	user["data.publicEncyrptionKey"] = api.auth.EncryptionKey()
@@ -87,27 +86,43 @@ func (api kmdrAPI) SetupUser(username string) error {
 	if userVal, err := api.cue.GenerateCueSpec("#user", user); err != nil {
 		return err
 	} else {
-		_, err = api.ktrl.Apply(userVal)
+		_, err = api.ktrl.Apply([]interface{}{userVal})
 		return err
 	}
 }
 
 func (api kmdrAPI) Apply(applyStr string) error {
+	// convert the input to a cue value
 	applySchemas, err := api.cue.CompileSchemaFromString(applyStr)
 	if err != nil {
 		return err
 	}
 
+	// validate that the input is correct
 	manifests := applySchemas.Value().LookupPath(cue.ParsePath("manifests"))
-
 	if val, err := api.cue.ValidateResource("#manifests", manifests); err != nil {
 		return errors.New(fmt.Sprintf(err.Error(), val, manifests.Eval()))
 	}
 
-	if err := api.ktrl.IsAvailable(); err != nil {
+	// query for the worls as it relates to the manifests input
+	res, err := api.ktrl.Query(manifests)
+	if err != nil {
 		return err
 	}
-	resp, err := api.ktrl.Apply(applySchemas)
+
+	// Validate and plan and return the commands
+	plan, err := api.plan.Plan(res)
+	if err != nil {
+		return err
+	}
+
+	// Sign the changes
+	for _, cmd := range plan {
+		api.auth.SignNode(cmd.([]byte))
+	}
+
+	// Apply the changes
+	resp, err := api.ktrl.Apply(plan)
 	if err != nil {
 		return err
 	}

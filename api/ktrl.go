@@ -16,13 +16,11 @@ limitations under the License.
 package api
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"os/exec"
 	"path"
 
-	"cuelang.org/go/cue"
 	"github.com/adrg/xdg"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
@@ -32,9 +30,10 @@ import (
 
 // KtrlAPI
 type KtrlAPI interface {
-	InitConfig() error
-	IsAvailable() error
-	Apply(cueValue cue.Value) (*kb.ApplyDefault, error)
+	isAvailable() (bool, error)
+	initConfig() error
+	Query(interface{}) (interface{}, error) // TODO: correct signature
+	Apply([]interface{}) (*kb.ApplyDefault, error)
 }
 
 // ktrlAPI for managing the ktrl grpc service
@@ -59,12 +58,12 @@ type serverConfig struct {
 
 // NewKtrlAPI returns a new Client
 func newKtrlAPI(options ...grpc.DialOption) (KtrlAPI, error) {
-	ktrl := ktrlAPI{
+	ktrl := &ktrlAPI{
 		Config: ktrlConfig{
 			Server: serverConfig{},
 		},
 	}
-	err := ktrl.InitConfig()
+	err := ktrl.initConfig()
 	if err != nil {
 		return ktrl, err
 	}
@@ -87,7 +86,7 @@ func newKtrlAPI(options ...grpc.DialOption) (KtrlAPI, error) {
 }
 
 // init reads in configurations for the kubelt config directory to setup a ktrlClient
-func (ktrl ktrlAPI) InitConfig() error {
+func (ktrl *ktrlAPI) initConfig() error {
 	parentName := "kubelt"
 	fileName := "config"
 	configType := "toml"
@@ -129,25 +128,37 @@ func (ktrl ktrlAPI) InitConfig() error {
 }
 
 // IsAvailable checks if the ktrl daemon is installed and running
-func (ktrl ktrlAPI) IsAvailable() error {
+func (ktrl *ktrlAPI) isAvailable() (bool, error) {
 	if _, err := exec.LookPath("ktrl"); err != nil {
-		return errors.New("ktrl is not installed and running")
+		return false, errors.New("ktrl is not installed and running")
 	}
 	// check if ktrl is running
 	if !checkKtrlProcess() {
-		return errors.New("ktrl is not running")
+		return false, errors.New("ktrl is not running")
 	}
-	return nil
+	return true, nil
+}
+
+// Run a query against the data grid
+func (ktrl *ktrlAPI) Query(q interface{}) (interface{}, error) {
+	if ok, err := ktrl.isAvailable(); !ok {
+		return nil, err
+	}
+	return nil, nil
 }
 
 // Apply calls out to ktrl to mutate the kubelt graph using values supplied by the user
-func (ktrl ktrlAPI) Apply(cueValue cue.Value) (*kb.ApplyDefault, error) {
-	ctx := ktrl.Config.Contexts[ktrl.Config.CurrentContext]
-	cueString := fmt.Sprint(cueValue)
-	resource := &kb.Cue{
-		Cue: cueString,
+func (ktrl *ktrlAPI) Apply([]interface{}) (*kb.ApplyDefault, error) {
+	if ok, err := ktrl.isAvailable(); !ok {
+		return nil, err
 	}
-	request := &kb.ApplyRequest{Resources: resource, Context: ctx}
-	r, err := ktrl.Client.Apply(context.Background(), request)
-	return r, err
+	return nil, nil
+	// ctx := ktrl.Config.Contexts[ktrl.Config.CurrentContext]
+	// cueString := fmt.Sprint(cueValue)
+	// resource := &kb.Cue{
+	// 	Cue: cueString,
+	// }
+	// request := &kb.ApplyRequest{Resources: resource, Context: ctx}
+	// r, err := ktrl.Client.Apply(context.Background(), request)
+	// return r, err
 }
