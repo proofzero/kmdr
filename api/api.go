@@ -21,7 +21,6 @@ import (
 	"fmt"
 
 	"cuelang.org/go/cue"
-	"github.com/proofzero/kmdr/util"
 )
 
 // this api is used multuple times during an execution
@@ -102,11 +101,7 @@ func (api kmdrAPI) Apply(applyStr string) error {
 	manifests := applySchemas.Value().LookupPath(cue.ParsePath("manifests"))
 
 	if val, err := api.cue.ValidateResource("#manifests", manifests); err != nil {
-		p := &util.HelpPanic{
-			Reason: err.Error(),
-		}
-		display, _ := p.Display(val, manifests.Eval())
-		return errors.New(display)
+		return errors.New(fmt.Sprintf(err.Error(), val, manifests.Eval()))
 	}
 
 	if err := api.ktrl.IsAvailable(); err != nil {

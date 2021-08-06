@@ -17,55 +17,66 @@ package util
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"text/template"
 
 	"github.com/fatih/color"
 )
 
+// Interface
+// -----------------------------------------------------------------------------
+
+type Help interface {
+	Panic(string, ...interface{}) error
+}
+
+// Implementation
+// -----------------------------------------------------------------------------
+
 const UnhandledException = `An unhandled exception occurred.`
 
 // HelpPanic
-type HelpPanic struct {
-	Reason string
-	Help   string
-	Error  error
+type help struct {
+	reason string
+	cta    string
+	err    error
 }
 
 // screen is the template for exporting meaningful errors to the users terminal
 const screen = `
   {{define "Reason"}}  
-  {{ .Reason }}
+  {{ .reason }}
   {{end}}
   {{define "Help"}}
-  If this problem persists, please open an issue at https://github.com/proofzero/kdmr/issues
+  {{ .extra }}
   {{end}}
   {{define "Trace"}}
   TRACE:
   ---
-  {{ .Error }}
+  {{ .err }}
   {{end}}`
 
-// Display executes and returns the error templates with the provides errors
-func (p *HelpPanic) Display(args ...interface{}) (string, error) {
-	p.Reason = fmt.Sprintf(p.Reason, args...)
+func (h *help) Panic(reason string, extra ...interface{}) error {
+	h.cta = `If this problem persists, please open an issue at https://github.com/proofzero/kdmr/issues`
+	h.reason = fmt.Sprintf(reason, extra...)
+
 	tmpl, _ := template.New("error").Parse(screen)
+
 	var str bytes.Buffer
-	err := tmpl.ExecuteTemplate(&str, "Reason", p)
+	err := tmpl.ExecuteTemplate(&str, "Reason", h)
 	if err != nil {
-		return "", err
+		return err
 	}
-	if p.Help != "" {
-		err = tmpl.ExecuteTemplate(&str, "Help", p)
+	err = tmpl.ExecuteTemplate(&str, "Help", h)
+	if err != nil {
+		return err
+	}
+	if h.err != nil {
+		err = tmpl.ExecuteTemplate(&str, "Error", h)
 		if err != nil {
-			return "", err
+			return err
 		}
 	}
-	if p.Error != nil {
-		err = tmpl.ExecuteTemplate(&str, "Error", p)
-		if err != nil {
-			return "", err
-		}
-	}
-	return color.RedString(str.String()), err
+	return errors.New(color.RedString(str.String()))
 }

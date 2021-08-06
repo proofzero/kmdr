@@ -17,7 +17,6 @@ package apply
 
 import (
 	"bufio"
-	"errors"
 	"io/ioutil"
 	"os"
 
@@ -65,14 +64,11 @@ func applyCmdRun(cmd *cobra.Command, args []string) error {
 		applyStr = string(fBytes)
 	}
 
+	help := util.Help(nil)
 	API, _ := api.NewAPI()
 	err := API.Apply(applyStr)
 	if err != nil {
-		p := &util.HelpPanic{
-			Reason: err.Error(),
-		}
-		display, _ := p.Display()
-		return errors.New(display)
+		return help.Panic(err.Error())
 	}
 
 	return nil
