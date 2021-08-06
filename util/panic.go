@@ -38,28 +38,33 @@ const UnhandledException = `An unhandled exception occurred.`
 
 // HelpPanic
 type help struct {
-	reason string
-	cta    string
-	err    error
+	Reason string
+	Cta    string
+	Err    error
 }
 
 // screen is the template for exporting meaningful errors to the users terminal
 const screen = `
   {{define "Reason"}}  
-  {{ .reason }}
+  {{ .Reason }}
   {{end}}
   {{define "Help"}}
-  {{ .extra }}
+  {{ .Cta }}
   {{end}}
   {{define "Trace"}}
   TRACE:
   ---
-  {{ .err }}
+  {{ .Err }}
   {{end}}`
 
-func (h *help) Panic(reason string, extra ...interface{}) error {
-	h.cta = `If this problem persists, please open an issue at https://github.com/proofzero/kdmr/issues`
-	h.reason = fmt.Sprintf(reason, extra...)
+func NewHelp() *help {
+	h := help{}
+	h.Cta = "If this problem persists, please open an issue at https://github.com/proofzero/kdmr/issues"
+	return &h
+}
+
+func (h *help) Panic(reason string, cta bool, extra ...interface{}) error {
+	h.Reason = fmt.Sprintf(reason, extra...)
 
 	tmpl, _ := template.New("error").Parse(screen)
 
@@ -68,11 +73,13 @@ func (h *help) Panic(reason string, extra ...interface{}) error {
 	if err != nil {
 		return err
 	}
-	err = tmpl.ExecuteTemplate(&str, "Help", h)
-	if err != nil {
-		return err
+	if cta {
+		err = tmpl.ExecuteTemplate(&str, "Help", h)
+		if err != nil {
+			return err
+		}
 	}
-	if h.err != nil {
+	if h.Err != nil {
 		err = tmpl.ExecuteTemplate(&str, "Error", h)
 		if err != nil {
 			return err

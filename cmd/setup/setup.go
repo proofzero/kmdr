@@ -39,8 +39,8 @@ func NewSetupCmd() *cobra.Command {
 		Long:  `setup kubelt kmdr`,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			if username == "" && anon == "" {
-				help := util.Help(nil)
-				return help.Panic("You must set --username or --anonymous flag when running setup.")
+				help := util.NewHelp()
+				return help.Panic("You must set --username or --anonymous flag when running setup.", false)
 			} else if anon != "" {
 				username = anon
 			}
@@ -59,7 +59,7 @@ func NewSetupCmd() *cobra.Command {
 
 // setupCmdRun bootstraps the local enviroment and configurations
 func setupCmdRun(cmd *cobra.Command, args []string) error {
-	help := util.Help(nil)
+	help := util.NewHelp()
 	API, err := api.NewAPI()
 	if err != nil {
 		return err
@@ -67,7 +67,7 @@ func setupCmdRun(cmd *cobra.Command, args []string) error {
 
 	err = API.SetupUser(username)
 	if err != nil {
-		return help.Panic(err.Error())
+		return help.Panic(err.Error(), true)
 	}
 
 	return nil

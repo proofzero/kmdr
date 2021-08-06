@@ -64,11 +64,11 @@ func applyCmdRun(cmd *cobra.Command, args []string) error {
 		applyStr = string(fBytes)
 	}
 
-	help := util.Help(nil)
+	help := util.NewHelp()
 	API, _ := api.NewAPI()
 	err := API.Apply(applyStr)
 	if err != nil {
-		return help.Panic(err.Error())
+		return help.Panic(err.Error(), true)
 	}
 
 	return nil
