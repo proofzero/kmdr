@@ -17,7 +17,6 @@ package api
 
 import (
 	"embed"
-	"errors"
 	"fmt"
 
 	"cuelang.org/go/cue"
@@ -101,7 +100,7 @@ func (api kmdrAPI) Apply(applyStr string) error {
 	// validate that the input is correct
 	manifests := applySchemas.Value().LookupPath(cue.ParsePath("manifests"))
 	if val, err := api.cue.ValidateResource("#manifests", manifests); err != nil {
-		return errors.New(fmt.Sprintf(err.Error(), val, manifests.Eval()))
+		return fmt.Errorf(fmt.Sprintf(err.Error(), val, manifests.Eval()))
 	}
 
 	// query for the worls as it relates to the manifests input
@@ -118,7 +117,8 @@ func (api kmdrAPI) Apply(applyStr string) error {
 
 	// Sign the changes
 	for _, cmd := range plan {
-		api.auth.SignNode(cmd.([]byte))
+		// TODO: update the node
+		_, _ = api.auth.SignNode(cmd.([]byte))
 	}
 
 	// Apply the changes

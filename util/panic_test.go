@@ -1,43 +1,63 @@
+/*
+Copyright © 2021 kubelt
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package util
 
-import (
-	"testing"
-)
+import "testing"
 
-func TestHelpPanic_Display(t *testing.T) {
+func Test_help_Panic(t *testing.T) {
 	type fields struct {
 		Reason string
-		Help   string
-		Error  error
+		Cta    string
+		Err    error
 	}
 	type args struct {
-		args []interface{}
+		reason string
+		cta    bool
+		extra  []interface{}
 	}
 	tests := []struct {
-		name   string
-		fields fields
-		args   args
+		name    string
+		fields  fields
+		args    args
+		wantErr bool
 	}{
 		{
-			name: "generate error display",
-			fields: fields{
-				Reason: "test",
-				Help:   "",
-				Error:  nil,
+			name: "test panic w/ no cta and no extras",
+			args: args{
+				reason: "test",
+				cta:    false,
+				extra:  nil,
 			},
-			args: args{},
+			wantErr: false,
 		},
-		// TODO: add tests for other sub templates and failures
+		{
+			name: "test panic w/ cta and no extras",
+			args: args{
+				reason: "test",
+				cta:    true,
+				extra:  nil,
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			p := &HelpPanic{
-				Reason: tt.fields.Reason,
-				Help:   tt.fields.Help,
-				Error:  tt.fields.Error,
-			}
-			if got, err := p.Display(tt.args.args...); err != nil {
-				t.Errorf("HelpPanic.Display() = \n%v", got)
+			h := NewHelp()
+			if err := h.Panic(tt.args.reason, tt.args.cta, tt.args.extra...); (err == nil) != tt.wantErr {
+				t.Errorf("help.Panic() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

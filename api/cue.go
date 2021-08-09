@@ -66,6 +66,7 @@ func (api cueAPI) unifyKmdrModule(input cue.Value) cue.Value {
 
 // NewCueAPI returns a new CueAPI
 func newCueAPI() (CueAPI, error) {
+	// Load definitinos from the embedded FS
 	overlay := make(map[string]load.Source)
 	err := fs.WalkDir(StaticFS, ".", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
@@ -108,6 +109,7 @@ func newCueAPI() (CueAPI, error) {
 		definitions: defs,
 	}
 
+	// Validate the embedded FS load worked
 	_, err = mustFind(defs.LookupPath(cue.ParsePath("#manifests")))
 	if err != nil {
 		return c, err
