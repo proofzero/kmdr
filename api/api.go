@@ -81,7 +81,7 @@ func (api kmdrAPI) SetupUser(username string) error {
 
 	user := make(map[string]interface{})
 	user["data.name"] = username
-	user["data.publicEncyrptionKey"] = api.auth.EncryptionKey()
+	user["data.publicEncryptionKey"] = api.auth.EncryptionKey()
 	user["data.publicSignatureKey"] = api.auth.AuthKey()
 	if userVal, err := api.cue.GenerateCueSpec("#user", user); err != nil {
 		return err
