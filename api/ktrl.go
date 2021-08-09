@@ -95,6 +95,7 @@ func (ktrl *ktrlAPI) initConfig() error {
 
 // IsAvailable checks if the ktrl daemon is installed and running
 func (ktrl *ktrlAPI) isAvailable() (bool, error) {
+	// TODO: use a health check endpoint instead:
 	if _, err := exec.LookPath("ktrl"); err != nil {
 		return false, errors.New("ktrl is not installed and running")
 	}
