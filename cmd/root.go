@@ -18,10 +18,11 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"path"
 
+	"github.com/adrg/xdg"
 	"github.com/spf13/cobra"
 
-	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
 
 	apply "github.com/proofzero/kmdr/cmd/apply"
@@ -61,8 +62,8 @@ func init() {
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
-
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "~/.config/kubelt/config.toml", "config file (default is $HOME/.config/kubelt/config.toml)")
+	cf, _ := xdg.ConfigFile("kubelt/config.toml")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", cf, fmt.Sprintf("config file (default is %s)", cf))
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
@@ -76,10 +77,10 @@ func initConfig() {
 		viper.SetConfigFile(cfgFile)
 	} else {
 		// Find home directory.
-		home, err := homedir.Dir()
+		_, err := xdg.ConfigFile("kubelt/config.toml")
 		cobra.CheckErr(err)
 		// Search config in ~/.config/kubelt directory with name "config" (without extension).
-		viper.AddConfigPath(fmt.Sprintf("%s/.config/kubelt", home))
+		viper.AddConfigPath(path.Join(xdg.ConfigHome, "kubelt"))
 
 		// curDir, _ := os.Getwd()
 		// viper.AddConfigPath(curDir)   // also load any config files in the current directory

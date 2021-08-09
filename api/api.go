@@ -67,6 +67,7 @@ type kmdrAPI struct {
 }
 
 func (api kmdrAPI) SetupUser(username string) error {
+	// TODO: prompt for passphrase?
 	if err := api.auth.AddKeys(username); err != nil {
 		return err
 	}
@@ -91,6 +92,20 @@ func (api kmdrAPI) SetupUser(username string) error {
 }
 
 func (api kmdrAPI) Apply(applyStr string) error {
+	// Load context
+	if err := api.config.InitConfig(); err != nil {
+		return err
+	}
+
+	if user, err := api.config.GetCurrentUser(); err != nil {
+		return err
+	} else {
+		// Load keys into context
+		if err := api.auth.LoadKeys(user); err != nil {
+			return err
+		}
+	}
+
 	// convert the input to a cue value
 	applySchemas, err := api.cue.CompileSchemaFromString(applyStr)
 	if err != nil {

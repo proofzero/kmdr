@@ -22,9 +22,10 @@ import (
 	"io/fs"
 	"io/ioutil"
 	"os"
+	"path"
 
 	"github.com/BurntSushi/toml"
-	"github.com/mitchellh/go-homedir"
+	"github.com/adrg/xdg"
 	kb "github.com/proofzero/proto/pkg/v1alpha1"
 )
 
@@ -34,6 +35,7 @@ type ConfigAPI interface {
 	AddContext(context string, isDefault ...bool) error
 	RemoveContext(context string) error
 	SetDefaultContext(context string) error
+	GetCurrentUser() (string, error)
 	AddUser(user string, isDefault ...bool) error
 	RemoveUser(user string) error
 	SetDefaultUser(user string) error
@@ -54,25 +56,39 @@ type configAPI struct {
 
 // NewConfigAPI returns a new ConfigAPI
 func newConfigAPI() (ConfigAPI, error) {
-	home, _ := homedir.Dir()
-	configDir := fmt.Sprintf("%s/.config/kubelt", home)
+	configDir := path.Join(xdg.ConfigHome, "kubelt")
 	c := &configAPI{
-		configDir: configDir,
-		Ktrl:      ktrlConfig{},
-		Users:     make(map[string]map[string]string),
+		configDir:   configDir,
+		CurrentUser: "",
+		Users:       make(map[string]map[string]string),
+		Ktrl: ktrlConfig{
+			CurrentContext: "default",
+			Server: serverConfig{
+				Protocol: "tcp",
+				Port:     ":50051",
+			},
+			Contexts: map[string]*kb.Context{
+				"default": {
+					Name: "default",
+				},
+			},
+		},
 	}
 	return c, nil
 }
 
 // initConfig bootstraps the ktrl config
 func (c *configAPI) InitConfig() error {
-	configPath := fmt.Sprintf("%s/config.toml", c.configDir)
-	// check if the config already exists
-	if _, err := os.Stat(configPath); !errors.Is(err, fs.ErrNotExist) {
-		// if it does, bootstrap the config struct
-		f, _ := ioutil.ReadFile(configPath)
-		if _, err := toml.Decode(string(f), &c); err != nil {
-			return err
+	if configPath, err := xdg.ConfigFile("kubelt/config.toml"); err != nil {
+		return err
+	} else {
+		// check if the config already exists
+		if _, err := os.Stat(configPath); !errors.Is(err, fs.ErrNotExist) {
+			// if it does, bootstrap the config struct
+			f, _ := ioutil.ReadFile(configPath)
+			if _, err := toml.Decode(string(f), &c); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -107,6 +123,13 @@ func (c *configAPI) RemoveContext(context string) error {
 func (c *configAPI) SetDefaultContext(context string) error {
 	c.Ktrl.CurrentContext = context
 	return nil
+}
+
+func (c *configAPI) GetCurrentUser() (string, error) {
+	if c.CurrentUser == "" {
+		return "", fmt.Errorf("No user set.")
+	}
+	return c.CurrentUser, nil
 }
 
 // AddUser adds a context to the config

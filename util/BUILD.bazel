@@ -11,6 +11,7 @@ go_library(
     deps = [
         "@com_github_fatih_color//:color",
         "@org_golang_x_crypto//nacl/box",
+        "@org_golang_x_crypto//nacl/sign",
     ],
 )
 

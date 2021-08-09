@@ -18,9 +18,8 @@ package api
 import (
 	"fmt"
 	"io/ioutil"
-	"os"
 
-	"github.com/mitchellh/go-homedir"
+	"github.com/adrg/xdg"
 	"github.com/proofzero/kmdr/util"
 	"golang.org/x/crypto/nacl/sign"
 	"golang.org/x/crypto/sha3"
@@ -48,7 +47,6 @@ type AuthAPI interface {
 // Auth
 
 type auth struct {
-	keysDir       string
 	SigningKeys   *signingKeys
 	EncrptionKeys *encryptionKeys
 }
@@ -64,16 +62,14 @@ type encryptionKeys struct {
 }
 
 func newAuthApi() (AuthAPI, error) {
-	home, _ := homedir.Dir()
-	keysDir := fmt.Sprintf("%s/.config/kubelt/keys", home)
 	return &auth{
-		keysDir:       keysDir,
 		SigningKeys:   &signingKeys{},
 		EncrptionKeys: &encryptionKeys{},
 	}, nil
 }
 
 func (a *auth) AddKeys(username string) error {
+	// TODO: use our multi hash library
 	publicSig, privateSig, err := util.GenerateSigningKeys()
 	if err != nil {
 		return err
@@ -83,33 +79,44 @@ func (a *auth) AddKeys(username string) error {
 		return err
 	}
 
-	_, err = os.Create(a.keysDir)
-	if err != nil {
-		return err
-	}
-
 	// Save signing keys
-	pubSigFile := fmt.Sprintf("%s/signing_%s.pub", a.keysDir, username)
-	secSigkFile := fmt.Sprintf("%s/signing_%s", a.keysDir, username)
-	err = ioutil.WriteFile(pubSigFile, privateSig[:], 0644)
-	if err != nil {
+	if secSigFile, err := xdg.ConfigFile(fmt.Sprintf("kubelt/keys/signing_%s", username)); err != nil {
 		return err
+	} else {
+		// TODO: armor the keys with our multihash library
+		err = ioutil.WriteFile(secSigFile, privateSig[:], 0600)
+		if err != nil {
+			return err
+		}
 	}
-	err = ioutil.WriteFile(secSigkFile, publicSig[:], 0644)
-	if err != nil {
+	if pubSigFile, err := xdg.ConfigFile(fmt.Sprintf("kubelt/keys/signing_%s.pub", username)); err != nil {
 		return err
+	} else {
+		// TODO: armor the keys with our multihash library
+		err = ioutil.WriteFile(pubSigFile, publicSig[:], 0600)
+		if err != nil {
+			return err
+		}
 	}
 
 	// Save encryption keys
-	pkFile := fmt.Sprintf("%s/%s.pub", a.keysDir, username)
-	skFile := fmt.Sprintf("%s/%s", a.keysDir, username)
-	err = ioutil.WriteFile(pkFile, pk[:], 0644)
-	if err != nil {
+	if secKeyFile, err := xdg.ConfigFile(fmt.Sprintf("kubelt/keys/%s", username)); err != nil {
 		return err
+	} else {
+		// TODO: armor the keys with our multihash library
+		err = ioutil.WriteFile(secKeyFile, key[:], 0600)
+		if err != nil {
+			return err
+		}
 	}
-	err = ioutil.WriteFile(skFile, key[:], 0644)
-	if err != nil {
+	if pubKeyFile, err := xdg.ConfigFile(fmt.Sprintf("kubelt/keys/%s.pub", username)); err != nil {
 		return err
+	} else {
+		// TODO: armor the keys with our multihash library
+		err = ioutil.WriteFile(pubKeyFile, pk[:], 0600)
+		if err != nil {
+			return err
+		}
 	}
 
 	a.SigningKeys.privateSigningKey = privateSig
@@ -123,43 +130,55 @@ func (a *auth) AddKeys(username string) error {
 
 func (a *auth) LoadKeys(username string) error {
 	// Read signing keys
-	pubSigFile := fmt.Sprintf("%s/signing_%s.pub", a.keysDir, username)
-	secSigkFile := fmt.Sprintf("%s/signing_%s", a.keysDir, username)
-	privateSig, err := ioutil.ReadFile(pubSigFile)
-	if err != nil {
+	var privateSig64 [64]byte
+	var publicSig32 [32]byte
+
+	if pubSigFile, err := xdg.ConfigFile(fmt.Sprintf("kubelt/keys/signing_%s.pub", username)); err != nil {
 		return err
+	} else {
+		if publicSig, err := ioutil.ReadFile(pubSigFile); err != nil {
+			return err
+		} else {
+			copy(publicSig32[:], publicSig)
+		}
 	}
-	publicSig, err := ioutil.ReadFile(secSigkFile)
-	if err != nil {
+
+	if secSigFile, err := xdg.ConfigFile(fmt.Sprintf("kubelt/keys/signing_%s", username)); err != nil {
 		return err
+	} else {
+		if secretSig, err := ioutil.ReadFile(secSigFile); err != nil {
+			return err
+		} else {
+			copy(privateSig64[:], secretSig)
+		}
 	}
 
 	// Read encryption keys
-	pkFile := fmt.Sprintf("%s/%s.pub", a.keysDir, username)
-	skFile := fmt.Sprintf("%s/%s", a.keysDir, username)
-	pk, err := ioutil.ReadFile(pkFile)
-	if err != nil {
+	var key32 [32]byte
+	var pk32 [32]byte
+
+	if pubKeyFile, err := xdg.ConfigFile(fmt.Sprintf("kubelt/keys/%s.pub", username)); err != nil {
 		return err
-	}
-	key, err := ioutil.ReadFile(skFile)
-	if err != nil {
-		return err
+	} else {
+		if publicKey, err := ioutil.ReadFile(pubKeyFile); err != nil {
+			return err
+		} else {
+			copy(key32[:], publicKey)
+		}
 	}
 
-	var privateSig64 [64]byte
-	copy(privateSig64[:], privateSig)
-
-	var publicSig32 [32]byte
-	copy(publicSig32[:], publicSig)
+	if secKeyFile, err := xdg.ConfigFile(fmt.Sprintf("kubelt/keys/%s", username)); err != nil {
+		return err
+	} else {
+		if secretKey, err := ioutil.ReadFile(secKeyFile); err != nil {
+			return err
+		} else {
+			copy(key32[:], secretKey)
+		}
+	}
 
 	a.SigningKeys.privateSigningKey = &privateSig64
 	a.SigningKeys.PublicSigningKey = &publicSig32
-
-	var key32 [32]byte
-	copy(key32[:], key)
-
-	var pk32 [32]byte
-	copy(key32[:], pk)
 
 	a.EncrptionKeys.privateEncryptionKey = &key32
 	a.EncrptionKeys.PublicEncryptionKey = &pk32

@@ -19,9 +19,7 @@ import (
 	"errors"
 	"fmt"
 	"os/exec"
-	"path"
 
-	"github.com/adrg/xdg"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 
@@ -87,38 +85,6 @@ func newKtrlAPI(options ...grpc.DialOption) (KtrlAPI, error) {
 
 // init reads in configurations for the kubelt config directory to setup a ktrlClient
 func (ktrl *ktrlAPI) initConfig() error {
-	parentName := "kubelt"
-	fileName := "config"
-	configType := "toml"
-
-	configDir := path.Join(xdg.ConfigHome, parentName)
-
-	// Will be uppercased automatically. Environment variables must
-	// have this prefix to be treated as configuration sources.
-	viper.SetEnvPrefix(fileName)
-
-	viper.SetDefault("ktrl.server.protocol", "tcp")
-
-	viper.SetDefault("ktrl.server.port", ":50051")
-
-	// name of config file (without extension)
-	viper.SetConfigName(fileName)
-	// REQUIRED if the config file does not have the extension in the name.
-	viper.SetConfigType(configType)
-	// Path to look for the config file in. Call multiple times to
-	// add many search paths.
-	viper.AddConfigPath(configDir)
-
-	if err := viper.ReadInConfig(); err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			// Config file not found; ignore error if desired.
-			fmt.Printf("missing config file: %s", err)
-		} else {
-			// Config file was found but another error was produced.
-			return fmt.Errorf("error loading configuration: %s", err)
-		}
-	}
-
 	err := viper.Unmarshal(&ktrl.Config)
 	if err != nil {
 		return fmt.Errorf("could not unmarshal config: %s", err)
