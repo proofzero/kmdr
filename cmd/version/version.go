@@ -17,7 +17,10 @@ package version
 
 import (
 	"os"
+	"strings"
 	"text/template"
+
+	_ "embed"
 
 	"github.com/spf13/cobra"
 )
@@ -40,13 +43,13 @@ func versionCmdRun(cmd *cobra.Command, args []string) {
 
 // version represents a semver version format
 type version struct {
-	Major int
-	Minor int
-	Patch int
+	Major string
+	Minor string
+	Patch string
 }
 
-// Version struct TODO: read from file?
-var Version = version{Major: 0, Minor: 1, Patch: 0}
+//go:embed version.txt
+var versionTxt string
 
 // The template for the version export
 const kmdrASCII = `
@@ -63,6 +66,8 @@ v{{ .Major }}.{{ .Minor }}.{{ .Patch }}
 
 // PrintLogo fetches current version information and executes a template
 func PrintLogo() {
+	semver := strings.Split(versionTxt, ".")
+	v := version{Major: semver[0], Minor: semver[1], Patch: semver[2]}
 	tmpl, _ := template.New("info").Parse(kmdrASCII)
-	_ = tmpl.Execute(os.Stdout, Version)
+	_ = tmpl.Execute(os.Stdout, v)
 }
