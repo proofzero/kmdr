@@ -32,6 +32,7 @@ go_library(
 )
 
 # TODO: add version numbers for genrules
+# Version can be pulled from the cmd version.txt
 
 # Linux
 # -----------------------------------------------------------------------
@@ -69,7 +70,7 @@ go_binary(
     goarch = "amd64",
     goos = "windows",
     linkmode = "pie",
-    pure = "off",
+    # pure = "off",
     visibility = ["//visibility:public"],
 )
 
@@ -93,7 +94,7 @@ go_binary(
     goarch = "amd64",
     goos = "darwin",
     linkmode = "pie",
-    pure = "off",
+    # pure = "off",
     visibility = ["//visibility:public"],
 )
 

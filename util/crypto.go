@@ -48,3 +48,12 @@ func GenerateSharedEncryptionKey(privateKey *[32]byte, publicKey *[32]byte) *[32
 	box.Precompute(sharedEncryptKey, publicKey, privateKey)
 	return sharedEncryptKey
 }
+
+func Sign(node []byte, key *[64]byte) []byte {
+	return sign.Sign(nil, node, key)
+}
+
+func ValidateSignature(signature []byte, key *[32]byte) bool {
+	_, ok := sign.Open(nil, signature, key)
+	return ok
+}
