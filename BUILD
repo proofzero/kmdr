@@ -22,7 +22,6 @@ gazelle(name = "gazelle")
 go_library(
     name = "kmdr_lib",
     srcs = ["main.go"],
-    # srcs = glob(["static/**/*"]),
     embedsrcs = glob(["static/**/*"]),
     importpath = "github.com/proofzero/kmdr",
     visibility = ["//visibility:private"],
@@ -47,7 +46,6 @@ go_binary(
     goos = "linux",
     linkmode = "pie",
     pure = "off",
-    # static = "on",
     visibility = ["//visibility:public"],
 )
 
@@ -71,6 +69,7 @@ go_binary(
     goarch = "amd64",
     goos = "windows",
     linkmode = "pie",
+    pure = "off",
     visibility = ["//visibility:public"],
 )
 
@@ -94,6 +93,7 @@ go_binary(
     goarch = "amd64",
     goos = "darwin",
     linkmode = "pie",
+    pure = "off",
     visibility = ["//visibility:public"],
 )
 
