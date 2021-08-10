@@ -1,4 +1,4 @@
-name: Create issues from todos
+name: Todos
 
 on:
   push:
@@ -7,9 +7,10 @@ on:
 
 jobs:
   todos:
+  
     runs-on: ubuntu-latest
 
-      steps:
-        - uses: actions/checkout@v1
-        - name: todo-actions
-          uses: dtinth/todo-actions@master
+    steps:
+    - uses: actions/checkout@v1
+    - name: todo-actions
+      uses: dtinth/todo-actions@master

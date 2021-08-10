@@ -120,12 +120,4 @@ func (ktrl *ktrlAPI) Apply([]interface{}) (*kb.ApplyResponse, error) {
 		return nil, err
 	}
 	return nil, nil
-	// ctx := ktrl.Config.Contexts[ktrl.Config.CurrentContext]
-	// cueString := fmt.Sprint(cueValue)
-	// resource := &kb.Cue{
-	// 	Cue: cueString,
-	// }
-	// request := &kb.ApplyRequest{Resources: resource, Context: ctx}
-	// r, err := ktrl.Client.Apply(context.Background(), request)
-	// return r, err
 }

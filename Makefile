@@ -1,4 +1,3 @@
-BIN="./bin"
 SRC=$(shell find . -name "*.go")
 
 ifeq (, $(shell which golangci-lint))
@@ -34,11 +33,11 @@ install_deps:
 	go get -v ./...
 
 clean:
-	rm -rf $(BIN)
+	bazel clean
 
 build:
 	$(info ******************** building binary ********************)
-	bazel run //:gazelle
+	bazel run //:gazelle -- update-repos -from_file=go.mod
 	bazel build //... 
 
 install_local:

@@ -21,7 +21,6 @@ import (
 
 	"github.com/adrg/xdg"
 	"github.com/proofzero/kmdr/util"
-	"golang.org/x/crypto/nacl/sign"
 	"golang.org/x/crypto/sha3"
 )
 
@@ -195,10 +194,9 @@ func (a *auth) EncryptionKey() *[32]byte {
 func (a *auth) SignNode(node []byte) ([]byte, error) {
 	h := make([]byte, 64)
 	sha3.ShakeSum256(h, node)
-	return sign.Sign(nil, h, a.SigningKeys.privateSigningKey), nil
+	return util.Sign(h, a.SigningKeys.privateSigningKey), nil
 }
 
 func (a *auth) ValidateNode(signature []byte) bool {
-	_, ok := sign.Open(nil, signature, a.SigningKeys.PublicSigningKey)
-	return ok
+	return util.ValidateSignature(signature, a.SigningKeys.PublicSigningKey)
 }
