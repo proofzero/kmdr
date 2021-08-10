@@ -39,7 +39,10 @@ type AuthAPI interface {
 }
 
 // TODO: methods to support multi format
-// TODO: define types for the 32 and 64 byte lengths and update signatures
+// Update the key structs to support the multiformat
+
+// TODO: armor the keys with our multihash library
+// Store the keys to disk after encoding them to a text format
 
 // Implementation
 // -----------------------------------------------------------------------------
@@ -69,7 +72,6 @@ func newAuthApi() (AuthAPI, error) {
 }
 
 func (a *auth) AddKeys(username string) error {
-	// TODO: use our multi hash library
 	publicSig, privateSig, err := util.GenerateSigningKeys()
 	if err != nil {
 		return err
@@ -83,7 +85,6 @@ func (a *auth) AddKeys(username string) error {
 	if secSigFile, err := xdg.ConfigFile(fmt.Sprintf("kubelt/keys/signing_%s", username)); err != nil {
 		return err
 	} else {
-		// TODO: armor the keys with our multihash library
 		err = ioutil.WriteFile(secSigFile, privateSig[:], 0600)
 		if err != nil {
 			return err
@@ -92,7 +93,6 @@ func (a *auth) AddKeys(username string) error {
 	if pubSigFile, err := xdg.ConfigFile(fmt.Sprintf("kubelt/keys/signing_%s.pub", username)); err != nil {
 		return err
 	} else {
-		// TODO: armor the keys with our multihash library
 		err = ioutil.WriteFile(pubSigFile, publicSig[:], 0600)
 		if err != nil {
 			return err
@@ -103,7 +103,6 @@ func (a *auth) AddKeys(username string) error {
 	if secKeyFile, err := xdg.ConfigFile(fmt.Sprintf("kubelt/keys/%s", username)); err != nil {
 		return err
 	} else {
-		// TODO: armor the keys with our multihash library
 		err = ioutil.WriteFile(secKeyFile, key[:], 0600)
 		if err != nil {
 			return err
@@ -112,7 +111,6 @@ func (a *auth) AddKeys(username string) error {
 	if pubKeyFile, err := xdg.ConfigFile(fmt.Sprintf("kubelt/keys/%s.pub", username)); err != nil {
 		return err
 	} else {
-		// TODO: armor the keys with our multihash library
 		err = ioutil.WriteFile(pubKeyFile, pk[:], 0600)
 		if err != nil {
 			return err

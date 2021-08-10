@@ -67,7 +67,8 @@ type kmdrAPI struct {
 }
 
 func (api kmdrAPI) SetupUser(username string) error {
-	// TODO: prompt for passphrase?
+	// TODO: prompt for passphrase
+	// request a passphrase when generating keys. Empty == no passphrase
 	if err := api.auth.AddKeys(username); err != nil {
 		return err
 	}
@@ -132,7 +133,8 @@ func (api kmdrAPI) Apply(applyStr string) error {
 
 	// Sign the changes
 	for _, cmd := range plan {
-		// TODO: update the node
+		// TODO: sign the node
+		// Sign the node and update the node content before applying to KTRL
 		_, _ = api.auth.SignNode(cmd.([]byte))
 	}
 

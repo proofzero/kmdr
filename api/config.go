@@ -49,9 +49,11 @@ type ConfigAPI interface {
 // configAPI for managing ktrl configs
 type configAPI struct {
 	configDir   string
-	CurrentUser string                       `toml:"current_user"`
-	Ktrl        ktrlConfig                   `toml:"ktrl"`
-	Users       map[string]map[string]string `toml:"users"` // TODO: User struct?
+	CurrentUser string     `toml:"current_user"`
+	Ktrl        ktrlConfig `toml:"ktrl"`
+	// TODO: Create a user struct for the config
+	// This might be doable using generated structs from the proto library
+	Users map[string]map[string]string `toml:"users"`
 }
 
 // NewConfigAPI returns a new ConfigAPI
@@ -100,6 +102,7 @@ func (c *configAPI) AddContext(context string, isDefault ...bool) error {
 		c.Ktrl.Contexts = make(map[string]*kb.Context)
 	}
 	// TODO: check if context already exists
+	// If the context requested doesn't exist return an error
 	c.Ktrl.Contexts[context] = &kb.Context{Name: context}
 	c.Ktrl.Contexts[context].Name = context
 	if len(isDefault) > 0 && isDefault[0] {
@@ -135,6 +138,7 @@ func (c *configAPI) GetCurrentUser() (string, error) {
 // AddUser adds a context to the config
 func (c *configAPI) AddUser(username string, isDefault ...bool) error {
 	// TODO: check if user already exists
+	// If the user doesn't exist return an error
 
 	c.Users[username] = make(map[string]string)
 	c.Users[username]["Name"] = username

@@ -26,11 +26,17 @@ import (
 	kb "github.com/proofzero/proto/pkg/v1alpha1"
 )
 
+// TODO: implement query
+// Once we've defiend the query interfaces we need to implement this stub
+
+// TODO: implement apply query
+// Once we've defiend the apply interface we need to update the apply implementation
+
 // KtrlAPI
 type KtrlAPI interface {
 	isAvailable() (bool, error)
 	initConfig() error
-	Query(interface{}) (interface{}, error) // TODO: correct signature
+	Query(interface{}) (interface{}, error)
 	Apply([]interface{}) (*kb.ApplyDefault, error)
 }
 
@@ -95,7 +101,8 @@ func (ktrl *ktrlAPI) initConfig() error {
 
 // IsAvailable checks if the ktrl daemon is installed and running
 func (ktrl *ktrlAPI) isAvailable() (bool, error) {
-	// TODO: use a health check endpoint instead:
+	// TODO: use a health check endpoint instead
+	// Define a helath check endpoint in the proto to use instead of path
 	if _, err := exec.LookPath("ktrl"); err != nil {
 		return false, errors.New("ktrl is not installed and running")
 	}

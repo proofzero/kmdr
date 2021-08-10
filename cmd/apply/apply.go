@@ -51,6 +51,7 @@ func NewApplyCmd() *cobra.Command {
 // applyCmdRun accepts stdnin or a cue file, validates the contents
 // before sending the contents to ktrl
 func applyCmdRun(cmd *cobra.Command, args []string) error {
+	help := util.NewHelp()
 	var applyStr string
 	if file == "-" {
 		// Look at stdin for the good stuff
@@ -59,12 +60,11 @@ func applyCmdRun(cmd *cobra.Command, args []string) error {
 	} else { // read in cue file
 		fBytes, err := ioutil.ReadFile(file)
 		if err != nil {
-			return err
+			return help.Panic(err.Error(), false)
 		}
 		applyStr = string(fBytes)
 	}
 
-	help := util.NewHelp()
 	API, _ := api.NewAPI()
 	err := API.Apply(applyStr)
 	if err != nil {
