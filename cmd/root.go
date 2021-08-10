@@ -59,6 +59,8 @@ func init() {
 	rootCmd.AddCommand(apply.NewApplyCmd())
 	rootCmd.AddCommand(setup.NewSetupCmd())
 
+	// TODO: add a command to generate a plugin project template
+
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.

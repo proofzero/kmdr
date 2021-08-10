@@ -16,9 +16,8 @@ limitations under the License.
 package api
 
 import (
-	"errors"
+	"context"
 	"fmt"
-	"os/exec"
 
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
@@ -37,7 +36,7 @@ type KtrlAPI interface {
 	isAvailable() (bool, error)
 	initConfig() error
 	Query(interface{}) (interface{}, error)
-	Apply([]interface{}) (*kb.ApplyDefault, error)
+	Apply([]interface{}) (*kb.ApplyResponse, error)
 }
 
 // ktrlAPI for managing the ktrl grpc service
@@ -49,9 +48,7 @@ type ktrlAPI struct {
 
 // ktrlConfig
 type ktrlConfig struct {
-	Server         serverConfig           `toml:"server"`
-	CurrentContext string                 `toml:"current_context"`
-	Contexts       map[string]*kb.Context `toml:"contexts"`
+	Server serverConfig `toml:"server"`
 }
 
 // serverConfig
@@ -101,16 +98,12 @@ func (ktrl *ktrlAPI) initConfig() error {
 
 // IsAvailable checks if the ktrl daemon is installed and running
 func (ktrl *ktrlAPI) isAvailable() (bool, error) {
-	// TODO: use a health check endpoint instead
-	// Define a helath check endpoint in the proto to use instead of path
-	if _, err := exec.LookPath("ktrl"); err != nil {
-		return false, errors.New("ktrl is not installed and running")
+	request := &kb.HealthCheckRequest{}
+	if res, err := ktrl.Client.HealthCheck(context.Background(), request); err != nil {
+		return false, fmt.Errorf("KTRL is not running.")
+	} else {
+		return res.Error == nil, nil
 	}
-	// check if ktrl is running
-	if !checkKtrlProcess() {
-		return false, errors.New("ktrl is not running")
-	}
-	return true, nil
 }
 
 // Run a query against the data grid
@@ -122,7 +115,7 @@ func (ktrl *ktrlAPI) Query(q interface{}) (interface{}, error) {
 }
 
 // Apply calls out to ktrl to mutate the kubelt graph using values supplied by the user
-func (ktrl *ktrlAPI) Apply([]interface{}) (*kb.ApplyDefault, error) {
+func (ktrl *ktrlAPI) Apply([]interface{}) (*kb.ApplyResponse, error) {
 	if ok, err := ktrl.isAvailable(); !ok {
 		return nil, err
 	}

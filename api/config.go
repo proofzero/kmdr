@@ -26,15 +26,11 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/adrg/xdg"
-	kb "github.com/proofzero/proto/pkg/v1alpha1"
 )
 
 // ConfigAPI
 type ConfigAPI interface {
 	InitConfig() error
-	AddContext(context string, isDefault ...bool) error
-	RemoveContext(context string) error
-	SetDefaultContext(context string) error
 	GetCurrentUser() (string, error)
 	AddUser(user string, isDefault ...bool) error
 	RemoveUser(user string) error
@@ -64,15 +60,9 @@ func newConfigAPI() (ConfigAPI, error) {
 		CurrentUser: "",
 		Users:       make(map[string]map[string]string),
 		Ktrl: ktrlConfig{
-			CurrentContext: "default",
 			Server: serverConfig{
 				Protocol: "tcp",
 				Port:     ":50051",
-			},
-			Contexts: map[string]*kb.Context{
-				"default": {
-					Name: "default",
-				},
 			},
 		},
 	}
@@ -93,38 +83,6 @@ func (c *configAPI) InitConfig() error {
 			}
 		}
 	}
-	return nil
-}
-
-// AddContext adds a context to the config
-func (c *configAPI) AddContext(context string, isDefault ...bool) error {
-	if c.Ktrl.Contexts == nil {
-		c.Ktrl.Contexts = make(map[string]*kb.Context)
-	}
-	// TODO: check if context already exists
-	// If the context requested doesn't exist return an error
-	c.Ktrl.Contexts[context] = &kb.Context{Name: context}
-	c.Ktrl.Contexts[context].Name = context
-	if len(isDefault) > 0 && isDefault[0] {
-		c.Ktrl.CurrentContext = context
-	}
-	return nil
-}
-
-// RemoveContext adds a context to the config
-func (c *configAPI) RemoveContext(context string) error {
-	if _, ok := c.Ktrl.Contexts[context]; !ok {
-		return fmt.Errorf("No context with name %s exist", context)
-	}
-
-	delete(c.Ktrl.Contexts, context)
-
-	return nil
-}
-
-// SetDefaultContext adds a context to the config
-func (c *configAPI) SetDefaultContext(context string) error {
-	c.Ktrl.CurrentContext = context
 	return nil
 }
 

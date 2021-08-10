@@ -35,10 +35,10 @@ func (m *MockKtrlAPI) EXPECT() *MockKtrlAPIMockRecorder {
 }
 
 // Apply mocks base method.
-func (m *MockKtrlAPI) Apply(arg0 []interface{}) (*v1alpha1.ApplyDefault, error) {
+func (m *MockKtrlAPI) Apply(arg0 []interface{}) (*v1alpha1.ApplyResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Apply", arg0)
-	ret0, _ := ret[0].(*v1alpha1.ApplyDefault)
+	ret0, _ := ret[0].(*v1alpha1.ApplyResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

@@ -74,7 +74,6 @@ func (api kmdrAPI) SetupUser(username string) error {
 	}
 
 	_ = api.config.InitConfig()
-	_ = api.config.AddContext("default", true)
 	_ = api.config.AddUser(username, true)
 	if err := api.config.Commit(); err != nil {
 		return err
@@ -146,9 +145,7 @@ func (api kmdrAPI) Apply(applyStr string) error {
 	if resp.Error != nil {
 		return fmt.Errorf(resp.Error.Message)
 	}
-	for _, v := range resp.Resources.Cue {
-		fmt.Println(v)
-	}
+	fmt.Println(resp.Graph)
 
 	return nil
 }

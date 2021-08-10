@@ -33,25 +33,6 @@ func (m *MockConfigAPI) EXPECT() *MockConfigAPIMockRecorder {
 	return m.recorder
 }
 
-// AddContext mocks base method.
-func (m *MockConfigAPI) AddContext(context string, isDefault ...bool) error {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{context}
-	for _, a := range isDefault {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "AddContext", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// AddContext indicates an expected call of AddContext.
-func (mr *MockConfigAPIMockRecorder) AddContext(context interface{}, isDefault ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{context}, isDefault...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddContext", reflect.TypeOf((*MockConfigAPI)(nil).AddContext), varargs...)
-}
-
 // AddUser mocks base method.
 func (m *MockConfigAPI) AddUser(user string, isDefault ...bool) error {
 	m.ctrl.T.Helper()
@@ -85,6 +66,21 @@ func (mr *MockConfigAPIMockRecorder) Commit() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Commit", reflect.TypeOf((*MockConfigAPI)(nil).Commit))
 }
 
+// GetCurrentUser mocks base method.
+func (m *MockConfigAPI) GetCurrentUser() (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCurrentUser")
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCurrentUser indicates an expected call of GetCurrentUser.
+func (mr *MockConfigAPIMockRecorder) GetCurrentUser() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCurrentUser", reflect.TypeOf((*MockConfigAPI)(nil).GetCurrentUser))
+}
+
 // InitConfig mocks base method.
 func (m *MockConfigAPI) InitConfig() error {
 	m.ctrl.T.Helper()
@@ -99,20 +95,6 @@ func (mr *MockConfigAPIMockRecorder) InitConfig() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InitConfig", reflect.TypeOf((*MockConfigAPI)(nil).InitConfig))
 }
 
-// RemoveContext mocks base method.
-func (m *MockConfigAPI) RemoveContext(context string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RemoveContext", context)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// RemoveContext indicates an expected call of RemoveContext.
-func (mr *MockConfigAPIMockRecorder) RemoveContext(context interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveContext", reflect.TypeOf((*MockConfigAPI)(nil).RemoveContext), context)
-}
-
 // RemoveUser mocks base method.
 func (m *MockConfigAPI) RemoveUser(user string) error {
 	m.ctrl.T.Helper()
@@ -125,20 +107,6 @@ func (m *MockConfigAPI) RemoveUser(user string) error {
 func (mr *MockConfigAPIMockRecorder) RemoveUser(user interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveUser", reflect.TypeOf((*MockConfigAPI)(nil).RemoveUser), user)
-}
-
-// SetDefaultContext mocks base method.
-func (m *MockConfigAPI) SetDefaultContext(context string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SetDefaultContext", context)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// SetDefaultContext indicates an expected call of SetDefaultContext.
-func (mr *MockConfigAPIMockRecorder) SetDefaultContext(context interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetDefaultContext", reflect.TypeOf((*MockConfigAPI)(nil).SetDefaultContext), context)
 }
 
 // SetDefaultUser mocks base method.
