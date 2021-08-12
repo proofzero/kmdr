@@ -1198,8 +1198,8 @@ go_repository(
 go_repository(
     name = "com_github_ianlancetaylor_demangle",
     importpath = "github.com/ianlancetaylor/demangle",
-    sum = "h1:mV02weKRL81bEnm8A0HT1/CAelMQDBuQIfLw8n+d6xI=",
-    version = "v0.0.0-20200824232613-28f6c0f3b639",
+    sum = "h1:UDMh68UUwekSh5iP2OMhRRZJiiBccgV7axzUG8vi56c=",
+    version = "v0.0.0-20181102032728-5e5cf60278f6",
 )
 
 go_repository(
@@ -1926,8 +1926,8 @@ go_repository(
 go_repository(
     name = "com_github_proofzero_proto",
     importpath = "github.com/proofzero/proto",
-    sum = "h1:IlwXQ4xzE/ELnXUnwTkOdw1vHXY74vW3tOIixEmIJmk=",
-    version = "v0.0.0-20210810173748-3799a1fbd2f5",
+    sum = "h1:9vFdgQRQhAjnRyaoNp671Z6oi5GvLvriazPU3EVu+3E=",
+    version = "v0.0.0-20210812181617-caac55399400",
 )
 
 go_repository(
@@ -2894,6 +2894,48 @@ go_repository(
     importpath = "go.opentelemetry.io/proto/otlp",
     sum = "h1:rwOQPCuKAKmwGKq2aVNnYIibI6wnV7EvzgfTCzcdGg8=",
     version = "v0.7.0",
+)
+
+go_repository(
+    name = "com_github_c_bata_go_prompt",
+    importpath = "github.com/c-bata/go-prompt",
+    sum = "h1:POP+nrHE+DfLYx370bedwNhsqmpCUynWPxuHi0C5vZI=",
+    version = "v0.2.6",
+)
+
+go_repository(
+    name = "com_github_juju_ansiterm",
+    importpath = "github.com/juju/ansiterm",
+    sum = "h1:FaWFmfWdAUKbSCtOU2QjDaorUexogfaMgbipgYATUMU=",
+    version = "v0.0.0-20180109212912-720a0952cc2a",
+)
+
+go_repository(
+    name = "com_github_lunixbochs_vtclean",
+    importpath = "github.com/lunixbochs/vtclean",
+    sum = "h1:weJVJJRzAJBFRlAiJQROKQs8oC9vOxvm4rZmBBk0ONw=",
+    version = "v0.0.0-20180621232353-2d01aacdc34a",
+)
+
+go_repository(
+    name = "com_github_manifoldco_promptui",
+    importpath = "github.com/manifoldco/promptui",
+    sum = "h1:R95mMF+McvXZQ7j1g8ucVZE1gLP3Sv6j9vlF9kyRqQo=",
+    version = "v0.8.0",
+)
+
+go_repository(
+    name = "com_github_mattn_go_tty",
+    importpath = "github.com/mattn/go-tty",
+    sum = "h1:5OfyWorkyO7xP52Mq7tB36ajHDG5OHrmBGIS/DtakQI=",
+    version = "v0.0.3",
+)
+
+go_repository(
+    name = "com_github_pkg_term",
+    importpath = "github.com/pkg/term",
+    sum = "h1:L3y/h2jkuBVFdWiJvNfYfKmzcCnILw7mJWm2JQuMppw=",
+    version = "v1.2.0-beta.2",
 )
 
 # Declare indirect dependencies and init toolchains.

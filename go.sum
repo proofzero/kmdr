@@ -252,8 +252,8 @@ github.com/prometheus/common v0.4.0/go.mod h1:TNfzLD0ON7rHzMJeJkieUDPYmFC7Snx/y8
 github.com/prometheus/procfs v0.0.0-20181005140218-185b4288413d/go.mod h1:c3At6R/oaqEKCNdg8wHV1ftS6bRYblBhIjjI8uT2IGk=
 github.com/prometheus/procfs v0.0.0-20190507164030-5867b95ac084/go.mod h1:TjEm7ze935MbeOT/UhFTIMYKhuLP4wbCsTZCD3I8kEA=
 github.com/prometheus/tsdb v0.7.1/go.mod h1:qhTCs0VvXwvX/y3TZrWD7rabWM+ijKTux40TwIPHuXU=
-github.com/proofzero/proto v0.0.0-20210812164241-cd10470e9ad9 h1:jy8EsHACqhi0L7iFA9wDtczC/u+Hn/7hTCzS3dY8mFI=
-github.com/proofzero/proto v0.0.0-20210812164241-cd10470e9ad9/go.mod h1:qil9h5FY8Rv8tGc57Dvmha6VhJLn/2SpuMJynPX9hko=
+github.com/proofzero/proto v0.0.0-20210812181617-caac55399400 h1:9vFdgQRQhAjnRyaoNp671Z6oi5GvLvriazPU3EVu+3E=
+github.com/proofzero/proto v0.0.0-20210812181617-caac55399400/go.mod h1:qil9h5FY8Rv8tGc57Dvmha6VhJLn/2SpuMJynPX9hko=
 github.com/protocolbuffers/txtpbfmt v0.0.0-20201118171849-f6a6b3f636fc h1:gSVONBi2HWMFXCa9jFdYvYk7IwW/mTLxWOF7rXS4LO0=
 github.com/protocolbuffers/txtpbfmt v0.0.0-20201118171849-f6a6b3f636fc/go.mod h1:KbKfKPy2I6ecOIGA9apfheFv14+P3RSmmQvshofQyMY=
 github.com/rogpeppe/fastuuid v0.0.0-20150106093220-6724a57986af/go.mod h1:XWv6SoW27p1b0cqNHllgS5HIMJraePCO15w5zCzIWYg=
