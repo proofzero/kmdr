@@ -31,11 +31,11 @@ import (
 // ConfigAPI
 type ConfigAPI interface {
 	InitConfig() error
-	GetCurrentUser() (string, error)
-	AddUser(user string, isDefault ...bool) error
+	GetCurrentUser() (*UserConfig, error)
+	AddUser(id string, username string, email string, isDefault ...bool) error
 	RemoveUser(user string) error
 	SetDefaultUser(user string) error
-	Commit() error
+	CommitConfig() error
 }
 
 // NOTE: We should consider doing an upstream to cobra/viper to support the use of CUElang
@@ -45,20 +45,24 @@ type ConfigAPI interface {
 // configAPI for managing ktrl configs
 type configAPI struct {
 	configDir   string
-	CurrentUser string     `toml:"current_user"`
-	Ktrl        ktrlConfig `toml:"ktrl"`
-	// TODO: Create a user struct for the config
-	// This might be doable using generated structs from the proto library
-	Users map[string]map[string]string `toml:"users"`
+	CurrentUser string                `toml:"current_user"`
+	Ktrl        ktrlConfig            `toml:"ktrl"`
+	Users       map[string]UserConfig `toml:"users"`
+}
+
+type UserConfig struct {
+	ID       string `toml:"id"`
+	Username string `toml:"username"`
+	Email    string `toml:"email"`
 }
 
 // NewConfigAPI returns a new ConfigAPI
-func newConfigAPI() (ConfigAPI, error) {
+func newConfigAPI() ConfigAPI {
 	configDir := path.Join(xdg.ConfigHome, "kubelt")
 	c := &configAPI{
 		configDir:   configDir,
 		CurrentUser: "",
-		Users:       make(map[string]map[string]string),
+		Users:       make(map[string]UserConfig),
 		Ktrl: ktrlConfig{
 			Server: serverConfig{
 				Protocol: "tcp",
@@ -66,7 +70,7 @@ func newConfigAPI() (ConfigAPI, error) {
 			},
 		},
 	}
-	return c, nil
+	return c
 }
 
 // initConfig bootstraps the ktrl config
@@ -82,24 +86,28 @@ func (c *configAPI) InitConfig() error {
 				return err
 			}
 		}
+		return nil
 	}
-	return nil
 }
 
-func (c *configAPI) GetCurrentUser() (string, error) {
+func (c *configAPI) GetCurrentUser() (*UserConfig, error) {
 	if c.CurrentUser == "" {
-		return "", fmt.Errorf("No user set.")
+		return nil, fmt.Errorf("No user set.")
 	}
-	return c.CurrentUser, nil
+	user := c.Users[c.CurrentUser]
+	return &user, nil
 }
 
 // AddUser adds a context to the config
-func (c *configAPI) AddUser(username string, isDefault ...bool) error {
+func (c *configAPI) AddUser(id string, username string, email string, isDefault ...bool) error {
 	// TODO: check if user already exists
-	// If the user doesn't exist return an error
+	// If the user already exist return an error
 
-	c.Users[username] = make(map[string]string)
-	c.Users[username]["Name"] = username
+	c.Users[username] = UserConfig{
+		ID:       id,
+		Username: username,
+		Email:    email,
+	}
 	if len(isDefault) > 0 && isDefault[0] {
 		c.CurrentUser = username
 	}
@@ -111,9 +119,7 @@ func (c *configAPI) RemoveUser(user string) error {
 	if _, ok := c.Users[user]; !ok {
 		return fmt.Errorf("No user with name %s exist", user)
 	}
-
 	delete(c.Users, user)
-
 	return nil
 }
 
@@ -124,7 +130,7 @@ func (c *configAPI) SetDefaultUser(user string) error {
 }
 
 // Commit write the config to disk
-func (c *configAPI) Commit() error {
+func (c *configAPI) CommitConfig() error {
 	configPath := fmt.Sprintf("%s/config.toml", c.configDir)
 	t := template.Must(template.ParseFS(StaticFS, "static/templates/kmdr.gotmpl"))
 	f, err := os.Create(configPath)

@@ -26,6 +26,7 @@ import (
 	"github.com/spf13/viper"
 
 	apply "github.com/proofzero/kmdr/cmd/apply"
+	"github.com/proofzero/kmdr/cmd/query"
 	"github.com/proofzero/kmdr/cmd/setup"
 	version "github.com/proofzero/kmdr/cmd/version"
 )
@@ -58,6 +59,7 @@ func init() {
 	rootCmd.AddCommand(version.NewVersionCmd())
 	rootCmd.AddCommand(apply.NewApplyCmd())
 	rootCmd.AddCommand(setup.NewSetupCmd())
+	rootCmd.AddCommand(query.NewQueryCmd())
 
 	// TODO: add a command to generate a plugin project template
 

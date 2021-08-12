@@ -16,6 +16,9 @@ limitations under the License.
 package setup
 
 import (
+	"fmt"
+
+	"github.com/manifoldco/promptui"
 	"github.com/proofzero/kmdr/api"
 	"github.com/proofzero/kmdr/util"
 	"github.com/spf13/cobra"
@@ -25,11 +28,7 @@ var setupExtraHelp string = `{{with (or .Long .Short)}}{{. | trimTrailingWhitesp
 {{end}}{{if or .Runnable .HasSubCommands}}{{.UsageString}}{{end}}
 `
 
-var (
-	username string
-	anon     string
-	ktrl     bool
-)
+var ktrl bool
 
 // NewSetupCmd creates returns the apply command
 func NewSetupCmd() *cobra.Command {
@@ -37,20 +36,9 @@ func NewSetupCmd() *cobra.Command {
 		Use:   "setup",
 		Short: "setup kubelt kmdr",
 		Long:  `setup kubelt kmdr`,
-		PreRunE: func(cmd *cobra.Command, args []string) error {
-			if username == "" && anon == "" {
-				help := util.NewHelp()
-				return help.Panic("You must set --username or --anonymous flag when running setup.", false)
-			} else if anon != "" {
-				username = anon
-			}
-			return nil
-		},
-		RunE: setupCmdRun,
+		RunE:  setupCmdRun,
 	}
 
-	cmd.Flags().StringVarP(&username, "username", "u", "", "choose desired username")
-	cmd.Flags().StringVarP(&anon, "anonymous", "a", "", "use an auto-generated username")
 	cmd.Flags().BoolVarP(&ktrl, "init-ktrl", "k", true, "initialize an ktrl daemon if not already")
 
 	cmd.SetHelpTemplate(setupExtraHelp)
@@ -65,7 +53,28 @@ func setupCmdRun(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	err = API.SetupUser(username)
+	fmt.Println("Setting up kubelt user...")
+
+	templates := &promptui.PromptTemplates{
+		Prompt:  "{{ . }} ",
+		Valid:   "{{ . }} ",
+		Invalid: "{{ . | red }} ",
+		Success: "{{ . | green | bold }} ",
+	}
+
+	prompt := promptui.Prompt{
+		Label:     "Please enter a username:",
+		Templates: templates,
+	}
+	username, _ := prompt.Run()
+	// TODO: add email validator for input
+	prompt = promptui.Prompt{
+		Label:     "Please enter your email address:",
+		Templates: templates,
+	}
+	email, _ := prompt.Run()
+
+	err = API.SetupUser(username, email)
 	if err != nil {
 		return help.Panic(err.Error(), true)
 	}

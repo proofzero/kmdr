@@ -6,18 +6,20 @@ require (
 	cuelang.org/go v0.4.0
 	github.com/BurntSushi/toml v0.3.1
 	github.com/adrg/xdg v0.3.3
+	github.com/c-bata/go-prompt v0.2.6
 	github.com/fatih/color v1.12.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/golang/mock v1.5.0
 	github.com/kr/text v0.2.0 // indirect
 	github.com/lib/pq v1.9.0 // indirect
 	github.com/magiconair/properties v1.8.5 // indirect
+	github.com/manifoldco/promptui v0.8.0
 	github.com/mattn/go-isatty v0.0.13 // indirect
 	github.com/mitchellh/mapstructure v1.4.1 // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/pelletier/go-toml v1.9.3 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/proofzero/proto v0.0.0-20210810173748-3799a1fbd2f5
+	github.com/proofzero/proto v0.0.0-20210812164241-cd10470e9ad9
 	github.com/spf13/afero v1.6.0 // indirect
 	github.com/spf13/cast v1.3.1 // indirect
 	github.com/spf13/cobra v1.1.3

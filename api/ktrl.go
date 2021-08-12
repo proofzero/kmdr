@@ -35,8 +35,9 @@ import (
 type KtrlAPI interface {
 	isAvailable() (bool, error)
 	initConfig() error
-	Query(interface{}) (interface{}, error)
-	Apply([]interface{}) (*kb.ApplyResponse, error)
+	RegisterUser(*kb.Command) (*kb.Node, error)
+	Query(*kb.Manifests) ([]*kb.Node, error)
+	Apply(*kb.Commands) ([]*kb.Node, error)
 }
 
 // ktrlAPI for managing the ktrl grpc service
@@ -96,7 +97,7 @@ func (ktrl *ktrlAPI) initConfig() error {
 	return nil
 }
 
-// IsAvailable checks if the ktrl daemon is installed and running
+// isAvailable checks if the ktrl daemon is installed and running
 func (ktrl *ktrlAPI) isAvailable() (bool, error) {
 	request := &kb.HealthCheckRequest{}
 	if res, err := ktrl.Client.HealthCheck(context.Background(), request); err != nil {
@@ -106,8 +107,15 @@ func (ktrl *ktrlAPI) isAvailable() (bool, error) {
 	}
 }
 
+func (ktrl *ktrlAPI) RegisterUser(*kb.Command) (*kb.Node, error) {
+	if ok, err := ktrl.isAvailable(); !ok {
+		return nil, err
+	}
+	return nil, nil
+}
+
 // Run a query against the data grid
-func (ktrl *ktrlAPI) Query(q interface{}) (interface{}, error) {
+func (ktrl *ktrlAPI) Query(q *kb.Manifests) ([]*kb.Node, error) {
 	if ok, err := ktrl.isAvailable(); !ok {
 		return nil, err
 	}
@@ -115,9 +123,10 @@ func (ktrl *ktrlAPI) Query(q interface{}) (interface{}, error) {
 }
 
 // Apply calls out to ktrl to mutate the kubelt graph using values supplied by the user
-func (ktrl *ktrlAPI) Apply([]interface{}) (*kb.ApplyResponse, error) {
+func (ktrl *ktrlAPI) Apply(plan *kb.Commands) ([]*kb.Node, error) {
 	if ok, err := ktrl.isAvailable(); !ok {
 		return nil, err
 	}
+	// req := &kb.ApplyRequest{Commands: &cmds}
 	return nil, nil
 }
