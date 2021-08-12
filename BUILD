@@ -22,7 +22,10 @@ gazelle(name = "gazelle")
 go_library(
     name = "kmdr_lib",
     srcs = ["main.go"],
-    embedsrcs = glob(["static/**/*"]),
+    embedsrcs = glob([
+        "static/**/*",
+        "cmd/version/version.txt",
+    ]),
     importpath = "github.com/proofzero/kmdr",
     visibility = ["//visibility:private"],
     deps = [

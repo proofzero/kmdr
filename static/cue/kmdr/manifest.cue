@@ -12,6 +12,6 @@ package kmdr
 	data?: [_]: _
 }
 
-#manifests: {
+#manifests & {
 	[_=string]: #node
 }

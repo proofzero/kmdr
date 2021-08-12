@@ -16,6 +16,7 @@ limitations under the License.
 package api
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 
@@ -29,11 +30,12 @@ import (
 
 // AuthAPI
 type AuthAPI interface {
-	AddKeys(username string) error
+	GenerateKeys(string) error
+	CommitKeys() error
 	LoadKeys(username string) error
 	AuthKey() *[32]byte
 	EncryptionKey() *[32]byte
-	SignNode(node []byte) ([]byte, error)
+	SignNode(node interface{}) ([]byte, error)
 	ValidateNode(signature []byte) bool
 }
 
@@ -49,6 +51,7 @@ type AuthAPI interface {
 // Auth
 
 type auth struct {
+	Name          string
 	SigningKeys   *signingKeys
 	EncrptionKeys *encryptionKeys
 }
@@ -63,14 +66,14 @@ type encryptionKeys struct {
 	privateEncryptionKey *[32]byte
 }
 
-func newAuthApi() (AuthAPI, error) {
+func newAuthApi() AuthAPI {
 	return &auth{
 		SigningKeys:   &signingKeys{},
 		EncrptionKeys: &encryptionKeys{},
-	}, nil
+	}
 }
 
-func (a *auth) AddKeys(username string) error {
+func (a *auth) GenerateKeys(username string) error {
 	publicSig, privateSig, err := util.GenerateSigningKeys()
 	if err != nil {
 		return err
@@ -80,41 +83,7 @@ func (a *auth) AddKeys(username string) error {
 		return err
 	}
 
-	// Save signing keys
-	if secSigFile, err := xdg.ConfigFile(fmt.Sprintf("kubelt/keys/signing_%s", username)); err != nil {
-		return err
-	} else {
-		err = ioutil.WriteFile(secSigFile, privateSig[:], 0600)
-		if err != nil {
-			return err
-		}
-	}
-	if pubSigFile, err := xdg.ConfigFile(fmt.Sprintf("kubelt/keys/signing_%s.pub", username)); err != nil {
-		return err
-	} else {
-		err = ioutil.WriteFile(pubSigFile, publicSig[:], 0600)
-		if err != nil {
-			return err
-		}
-	}
-
-	// Save encryption keys
-	if secKeyFile, err := xdg.ConfigFile(fmt.Sprintf("kubelt/keys/%s", username)); err != nil {
-		return err
-	} else {
-		err = ioutil.WriteFile(secKeyFile, key[:], 0600)
-		if err != nil {
-			return err
-		}
-	}
-	if pubKeyFile, err := xdg.ConfigFile(fmt.Sprintf("kubelt/keys/%s.pub", username)); err != nil {
-		return err
-	} else {
-		err = ioutil.WriteFile(pubKeyFile, pk[:], 0600)
-		if err != nil {
-			return err
-		}
-	}
+	a.Name = username
 
 	a.SigningKeys.privateSigningKey = privateSig
 	a.SigningKeys.PublicSigningKey = publicSig
@@ -122,6 +91,47 @@ func (a *auth) AddKeys(username string) error {
 	a.EncrptionKeys.privateEncryptionKey = key
 	a.EncrptionKeys.PublicEncryptionKey = pk
 
+	return nil
+}
+
+func (a *auth) CommitKeys() error {
+	// TODO: store armored or PEM
+
+	// Save signing keys
+	if secSigFile, err := xdg.ConfigFile(fmt.Sprintf("kubelt/keys/signing_%s", a.Name)); err != nil {
+		return err
+	} else {
+		err = ioutil.WriteFile(secSigFile, a.SigningKeys.privateSigningKey[:], 0600)
+		if err != nil {
+			return err
+		}
+	}
+	if pubSigFile, err := xdg.ConfigFile(fmt.Sprintf("kubelt/keys/signing_%s.pub", a.Name)); err != nil {
+		return err
+	} else {
+		err = ioutil.WriteFile(pubSigFile, a.SigningKeys.PublicSigningKey[:], 0600)
+		if err != nil {
+			return err
+		}
+	}
+
+	// Save encryption keys
+	if secKeyFile, err := xdg.ConfigFile(fmt.Sprintf("kubelt/keys/%s", a.Name)); err != nil {
+		return err
+	} else {
+		err = ioutil.WriteFile(secKeyFile, a.EncrptionKeys.privateEncryptionKey[:], 0600)
+		if err != nil {
+			return err
+		}
+	}
+	if pubKeyFile, err := xdg.ConfigFile(fmt.Sprintf("kubelt/keys/%s.pub", a.Name)); err != nil {
+		return err
+	} else {
+		err = ioutil.WriteFile(pubKeyFile, a.EncrptionKeys.PublicEncryptionKey[:], 0600)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -191,9 +201,13 @@ func (a *auth) EncryptionKey() *[32]byte {
 	return a.EncrptionKeys.PublicEncryptionKey
 }
 
-func (a *auth) SignNode(node []byte) ([]byte, error) {
+func (a *auth) SignNode(node interface{}) ([]byte, error) {
+	nodeBytes, err := json.Marshal(node)
+	if err != nil {
+		return nil, err
+	}
 	h := make([]byte, 64)
-	sha3.ShakeSum256(h, node)
+	sha3.ShakeSum256(h, nodeBytes)
 	return util.Sign(h, a.SigningKeys.privateSigningKey), nil
 }
 

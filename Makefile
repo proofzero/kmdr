@@ -28,15 +28,14 @@ test: install_deps lint
 
 install_deps:
 	$(info ******************** downloading dependencies ********************)
-	go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.40.1
-	go get -u github.com/kyoh86/richgo
-	go get -v ./...
+	go mod tidy
 
 clean:
 	bazel clean
 
 build:
 	$(info ******************** building binary ********************)
+	bazel run //:gazelle
 	bazel run //:gazelle -- update-repos -from_file=go.mod
 	bazel build //... 
 

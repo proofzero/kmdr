@@ -35,11 +35,12 @@ func NewAPI() (KmdrAPI, error) {
 		return *kmdrapi, nil
 	}
 
-	authapi, _ := newAuthApi()
-	configapi, _ := newConfigAPI()
+	authapi := newAuthApi()
+	configapi := newConfigAPI()
+	// TODO: check for errors during api init
 	cueapi, _ := newCueAPI()
 	ktrlapi, _ := newKtrlAPI()
-	planapi, _ := newPlanAPI()
+	planapi, _ := newPlanAPI(&authapi)
 
 	kmdrapi = &kmdrAPI{
 		auth:   authapi,
@@ -53,7 +54,7 @@ func NewAPI() (KmdrAPI, error) {
 
 // KmdrApi
 type KmdrAPI interface {
-	SetupUser(string) error
+	SetupUser(string, string) error
 	Apply(string) error
 }
 
@@ -66,44 +67,51 @@ type kmdrAPI struct {
 	plan   PlanAPI
 }
 
-func (api kmdrAPI) SetupUser(username string) error {
+func (api kmdrAPI) SetupUser(username string, email string) error {
 	// TODO: prompt for passphrase
+	// How would you do this for NACL keys?
+
 	// request a passphrase when generating keys. Empty == no passphrase
-	if err := api.auth.AddKeys(username); err != nil {
+	if err := api.auth.GenerateKeys(username); err != nil {
 		return err
 	}
 
-	_ = api.config.InitConfig()
-	_ = api.config.AddUser(username, true)
-	if err := api.config.Commit(); err != nil {
+	cmd := api.plan.User(username, email)
+	user, err := api.ktrl.RegisterUser(cmd)
+	if err != nil {
 		return err
 	}
 
-	user := make(map[string]interface{})
-	user["data.name"] = username
-	user["data.publicEncryptionKey"] = api.auth.EncryptionKey()
-	user["data.publicSignatureKey"] = api.auth.AuthKey()
-	if userVal, err := api.cue.GenerateCueSpec("#user", user); err != nil {
-		return err
-	} else {
-		_, err = api.ktrl.Apply([]interface{}{userVal})
+	// Add the new user to the config
+	if err := api.config.InitConfig(); err != nil {
 		return err
 	}
+	if err := api.config.AddUser(user.Header.ID, username, email, true); err != nil {
+		return err
+	}
+
+	// Commit the configuration changes
+	if err := api.auth.CommitKeys(); err != nil {
+		return err
+	}
+	if err := api.config.CommitConfig(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (api kmdrAPI) Apply(applyStr string) error {
-	// Load context
+	// Load config context
 	if err := api.config.InitConfig(); err != nil {
 		return err
 	}
 
+	// Load keys into context
 	if user, err := api.config.GetCurrentUser(); err != nil {
 		return err
-	} else {
-		// Load keys into context
-		if err := api.auth.LoadKeys(user); err != nil {
-			return err
-		}
+	} else if err := api.auth.LoadKeys(user.ID); err != nil {
+		return err
 	}
 
 	// convert the input to a cue value
@@ -113,39 +121,32 @@ func (api kmdrAPI) Apply(applyStr string) error {
 	}
 
 	// validate that the input is correct
-	manifests := applySchemas.Value().LookupPath(cue.ParsePath("manifests"))
-	if val, err := api.cue.ValidateResource("#manifests", manifests); err != nil {
-		return fmt.Errorf(fmt.Sprintf(err.Error(), val, manifests.Eval()))
+	manifestsCue := applySchemas.Value().LookupPath(cue.ParsePath("manifests"))
+	if val, err := api.cue.ValidateResource("#manifests", manifestsCue); err != nil {
+		return fmt.Errorf(fmt.Sprintf(err.Error(), val, manifestsCue.Eval()))
 	}
 
 	// query for the worls as it relates to the manifests input
-	res, err := api.ktrl.Query(manifests)
+	manifests, err := api.plan.Lookup(&manifestsCue)
+	if err != nil {
+		return err
+	}
+	nodes, err := api.ktrl.Query(manifests)
 	if err != nil {
 		return err
 	}
 
 	// Validate and plan and return the commands
-	plan, err := api.plan.Plan(res)
+	plan, err := api.plan.Plan(nodes)
 	if err != nil {
 		return err
-	}
-
-	// Sign the changes
-	for _, cmd := range plan {
-		// TODO: sign the node
-		// Sign the node and update the node content before applying to KTRL
-		_, _ = api.auth.SignNode(cmd.([]byte))
 	}
 
 	// Apply the changes
-	resp, err := api.ktrl.Apply(plan)
+	_, err = api.ktrl.Apply(plan)
 	if err != nil {
 		return err
 	}
-	if resp.Error != nil {
-		return fmt.Errorf(resp.Error.Message)
-	}
-	fmt.Println(resp.Graph)
 
 	return nil
 }

@@ -1,0 +1,12 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "query",
+    srcs = ["query.go"],
+    importpath = "github.com/proofzero/kmdr/cmd/query",
+    visibility = ["//visibility:public"],
+    deps = [
+        "@com_github_c_bata_go_prompt//:go-prompt",
+        "@com_github_spf13_cobra//:cobra",
+    ],
+)

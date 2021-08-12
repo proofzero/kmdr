@@ -57,3 +57,9 @@ func ValidateSignature(signature []byte, key *[32]byte) bool {
 	_, ok := sign.Open(nil, signature, key)
 	return ok
 }
+
+func Bytes32ToBytes(key *[32]byte) []byte {
+	var b []byte
+	copy(b, key[:])
+	return b
+}
